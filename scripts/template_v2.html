@@ -466,6 +466,8 @@ function refPrice(sz){ // 만원
   return null;
 }
 function askPrice(c,area){ if(!c.ask||!c.ask.dealMin) return null; return {p:c.ask.dealMin,src:'네이버 매물 최저 호가(전 평형)',n:c.ask.dealCnt}; }
+function inRegion(c){ return !S.hj.size || S.hj.has(c.hjcd); }
+function regionTitle(){ if(!S.hj.size) return ''; if(S.region&&S.region.kind==='gu') return S.region.key; const names=[...S.hj].map(cd=>{const b=DONGS.find(x=>x.cd===cd); return b?b.nm:'';}).filter(Boolean); return names.length<=3?names.join('·'):names.slice(0,3).join('·')+` 외 ${names.length-3}개 동`; }
 function commuteMin(c){ return S.mode==='car'?c.m.car:(S.mode==='transit'?c.m.transit:Math.min(c.m.car,c.m.transit)); }
 function eduScore(c){ return Math.round((c.m.rep+c.m.acad)/2*10)/10; }
 function matchRegion(c,list){ return list.some(x=>x&&(c.dong.includes(x)||c.sgg.includes(x)||c.m.area.includes(x)||c.name.includes(x)||(c.hj&&c.hj.includes(x))||(c.sggnm&&c.sggnm.replace(/\s/g,'').includes(x.replace(/\s/g,''))))); }
@@ -588,9 +590,10 @@ function drawMarkers(){
   order.forEach(c=>{const e=EV[c.id]; const vis=S.filter==='all'||(S.filter==='blue'&&e.status==='blue')||(S.filter==='by'&&e.status!=='red');
     if(!vis && scale>0.5) return;
     const X=px(c.lng), Y=py(c.lat); if(!inView(X,Y,20)) return;
-    const col=`var(--${e.status})`; const base=e.status==='blue'?7:(e.status==='yellow'?5.5:(scale>0.6?2.6:4)); const r=(base*Math.max(0.35,Math.min(1,scale))).toFixed(2);
-    const op=(e.status==='red'&&scale>0.6&&S.selected!==c.id)?' opacity=".45"':'';
-    const lbl=(showLbl && (e.status!=='red'||S.selected===c.id))||S.selected===c.id;
+    const out=!inRegion(c);
+    const col=out?'var(--muted)':`var(--${e.status})`; const base=out?2.2:(e.status==='blue'?7:(e.status==='yellow'?5.5:(scale>0.6?2.6:4))); const r=(base*Math.max(0.35,Math.min(1,scale))).toFixed(2);
+    const op=out?' opacity=".25"':((e.status==='red'&&scale>0.6&&S.selected!==c.id)?' opacity=".45"':'');
+    const lbl=!out&&((showLbl && (e.status!=='red'||S.selected===c.id))||S.selected===c.id);
     s+=`<g class="mk ${S.selected===c.id?'sel':''} ${vis?'':'dim'}" data-id="${c.id}"><circle cx="${X}" cy="${Y}" r="${r}" fill="${col}"${op} ${c.approx?'stroke-dasharray="2 1.5"':''}/>${lbl?`<text x="${X+ +r+2}" y="${Y+3}" font-size="${fs}">${c.name}</text>`:''}</g>`;});
   g.innerHTML=s;
   g.querySelectorAll('.mk').forEach(el=>{ el.addEventListener('click',ev=>{ev.stopPropagation(); select(el.dataset.id);}); el.addEventListener('pointerenter',ev=>showTip(el.dataset.id,ev)); el.addEventListener('pointermove',ev=>moveTip(ev)); el.addEventListener('pointerleave',hideTip); });
@@ -615,7 +618,8 @@ function showTip(id,ev){ const c=C.find(x=>x.id===id); if(!c) return; const e=EV
 function moveTip(ev){ const tip=document.getElementById('tip'); if(tip.hidden) return; const box=document.getElementById('mapbox').getBoundingClientRect(); let x=ev.clientX-box.left+14, y=ev.clientY-box.top+14; if(x+300>box.width) x=ev.clientX-box.left-300; if(y+tip.offsetHeight+10>box.height) y=ev.clientY-box.top-tip.offsetHeight-10; tip.style.left=x+'px'; tip.style.top=Math.max(4,y)+'px'; }
 function hideTip(){ document.getElementById('tip').hidden=true; }
 /* ---------------- 구·동 요약 ---------------- */
-function selectGu(gu){ const cds=DONGS.filter(b=>b.sggnm===gu).map(b=>b.cd); S.hj=new Set(cds); S.listLimit=60; S.selected=null; S.region={kind:'gu',key:gu}; refresh(); drawDynamic(); const bb=GUBB[gu]; if(bb) zoomBB(bb,1.15); renderRegionCard(); keepMapInView(); }
+function selectGu(gu){ const cds=DONGS.filter(b=>b.sggnm===gu).map(b=>b.cd); S.hj=new Set(cds); S.listLimit=60; S.selected=null; S.region={kind:'gu',key:gu}; refresh(); drawDynamic(); const bb=GUBB[gu]; if(bb) zoomBB(bb,1.15); renderRegionCard(); keepMapInView(); revealList(); }
+function revealList(){ const el=document.getElementById('cnt'); const r=el.getBoundingClientRect(); if(window.innerWidth<=900) return; if(r.top<0||r.top>window.innerHeight-80) el.scrollIntoView({behavior:'smooth',block:'center'}); }
 function showRegion(kind,key){ S.selected=null; S.region={kind,key}; renderDetail(); renderRegionCard(); keepMapInView(); }
 function keepMapInView(){ const mb=document.getElementById('mapbox'); const r=mb.getBoundingClientRect(); if(r.top<0||r.top>window.innerHeight*0.5) mb.scrollIntoView({behavior:'smooth',block:'start'}); }
 function renderRegionCard(){
@@ -705,7 +709,7 @@ function renderRegion(){
 }
 /* ---------------- 지역 트리 (구 → 행정동) ---------------- */
 function toggleDong(cd){ if(S.hj.has(cd)) S.hj.delete(cd); else S.hj.add(cd); S.listLimit=60; if(!S.hj.has(cd)&&S.region&&S.region.key===cd) S.region=null; afterRegionChange(); }
-function afterRegionChange(){ refresh(); drawDynamic(); renderRegionCard(); if(S.hj.size){ let bb=[1e9,1e9,-1e9,-1e9]; S.hj.forEach(cd=>{const b=DONGBB[cd]; if(!b) return; bb=[Math.min(bb[0],b[0]),Math.min(bb[1],b[1]),Math.max(bb[2],b[2]),Math.max(bb[3],b[3])];}); if(bb[0]<1e8) zoomBB(bb,1.3); } }
+function afterRegionChange(){ refresh(); drawDynamic(); renderRegionCard(); revealList(); if(S.hj.size){ let bb=[1e9,1e9,-1e9,-1e9]; S.hj.forEach(cd=>{const b=DONGBB[cd]; if(!b) return; bb=[Math.min(bb[0],b[0]),Math.min(bb[1],b[1]),Math.max(bb[2],b[2]),Math.max(bb[3],b[3])];}); if(bb[0]<1e8) zoomBB(bb,1.3); } }
 function renderTree(){
   const save=S.hj; S.hj=new Set(); const base={}; C.forEach(c=>{ base[c.id]=evaluate(c).status; }); S.hj=save;
   const byGu={}; C.forEach(c=>{ if(!c.hjcd) return; const g=byGu[c.sggnm]||(byGu[c.sggnm]={n:0,b:0,y:0,r:0,dongs:{}}); g.n++; g[base[c.id][0]]++; const d=g.dongs[c.hjcd]||(g.dongs[c.hjcd]={nm:c.hj,n:0,b:0,y:0,r:0}); d.n++; d[base[c.id][0]]++; });
@@ -724,11 +728,13 @@ function renderTree(){
 /* ---------------- LIST / DETAIL ---------------- */
 function sorted(){ return [...C].sort((a,b)=>EV[a.id].worst-EV[b.id].worst||EV[b.id].score-EV[a.id].score); }
 function renderList(){
-  const list=document.getElementById('list'); const arr=sorted();
+  const list=document.getElementById('list'); const arr=sorted().filter(inRegion);
   const c={blue:0,yellow:0,red:0}; arr.forEach(h=>c[EV[h.id].status]++);
-  document.getElementById('cnt').innerHTML=`<b style="color:var(--blue)">${c.blue}</b> · <b style="color:var(--yellow)">${c.yellow}</b> · <b style="color:var(--red)">${c.red}</b> / ${C.length}`;
+  const rt=regionTitle();
+  document.getElementById('cnt').innerHTML=`${rt?`<b>${rt}</b> `:''}<b style="color:var(--blue)">${c.blue}</b> · <b style="color:var(--yellow)">${c.yellow}</b> · <b style="color:var(--red)">${c.red}</b> / ${arr.length}${rt?` <button class="btn" id="cntClear" style="padding:1px 8px;font-size:11px;margin-left:6px">전체로</button>`:''}`;
+  const cc=document.getElementById('cntClear'); if(cc) cc.addEventListener('click',clearRegion);
   const vis=arr.filter(h=>S.filter==='all'||(S.filter==='blue'&&EV[h.id].status==='blue')||(S.filter==='by'&&EV[h.id].status!=='red'));
-  list.innerHTML=vis.slice(0,S.listLimit).map(h=>{const e=EV[h.id];
+  list.innerHTML=(rt?`<div class="small" style="padding:2px 0 4px">${rt} 단지 ${arr.length}개 · 현재 조건 점수순</div>`:'')+(vis.length?'':`<div class="small">이 지역에 표시할 단지가 없습니다.</div>`)+vis.slice(0,S.listLimit).map(h=>{const e=EV[h.id];
     return `<div class="item ${S.selected===h.id?'sel':''}" data-id="${h.id}" tabindex="0" role="button"><span class="st st-${e.status}"></span><div><div class="n">${h.name}</div><div class="m">${(h.sggnm||h.sgg).replace('수원시 ','').replace('용인시 ','').replace('화성시 ','')} ${h.hj||h.dong} · ${h.built||'?'}년 · ${h.units?h.units.toLocaleString()+'세대':'세대수 미확인'} · 출근 ${e.cm}분 · 교육 ${e.es}</div></div><div class="p num">${e.rp?fmtEok(e.rp.p):'-'}<small>${e.sz?e.sz.area+'㎡ 방'+e.rm.txt:''}${e.sz&&e.sz.n12?` · 12M ${e.sz.n12}건`:''}</small></div></div>`;}).join('');
   document.getElementById('moreBtn').hidden = vis.length<=S.listLimit;
   list.querySelectorAll('.item').forEach(el=>{el.addEventListener('click',()=>select(el.dataset.id));el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();select(el.dataset.id);}});});
@@ -886,8 +892,8 @@ function areaStats(){
 function nameHit(dong,part){ return C.find(c=>c.dong===dong&&c.name.includes(part)); }
 function renderReport(){
   const b=computeBudget(); const B=b.B; const Bman=B*10000; const st=areaStats();
-  const top=sorted().filter(c=>EV[c.id].status==='blue').slice(0,15);
-  const yel=sorted().filter(c=>EV[c.id].status==='yellow').slice(0,10);
+  const top=sorted().filter(inRegion).filter(c=>EV[c.id].status==='blue').slice(0,15);
+  const yel=sorted().filter(inRegion).filter(c=>EV[c.id].status==='yellow').slice(0,10);
   const row=(c)=>{const e=EV[c.id]; return `<tr><td><span class="st st-${e.status}" style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px"></span>${c.name}<div class="small">${c.sgg} ${c.dong} · ${c.built||'?'}년 · ${c.units?c.units.toLocaleString()+'세대':''}</div></td><td class="num r">${e.rp?fmtEok(e.rp.p):'-'}<div class="small">${e.sz?e.sz.area+'㎡':''}${e.sz&&e.sz.n12?' · '+e.sz.n12+'건':''}</div></td><td class="num r">${e.rp?(e.rp.p/Bman*100).toFixed(0)+'%':'-'}</td><td class="num r">${c.m.car}/${c.m.transit}분</td><td class="num r">${e.es}</td><td class="small">${c.m.mid}</td></tr>`;};
   const tbl=(arr)=>`<div class="tbl"><table><tr><th>단지</th><th class="r">기준가</th><th class="r">예산비</th><th class="r">출근(차/대중)</th><th class="r">교육</th><th>배정 후보 중학교</th></tr>${arr.map(row).join('')}</table></div>`;
   const grp={A:[nameHit('영통동','황골마을'),nameHit('영통동','벽적골'),nameHit('영통동','살구골'),nameHit('영통동','청명마을'),nameHit('영통동','신나무실')].filter(Boolean),

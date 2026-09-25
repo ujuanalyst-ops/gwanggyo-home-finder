@@ -1,0 +1,1010 @@
+<meta charset="utf-8">
+<title>광교 출근 집찾기</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@600;700&display=swap">
+<style>
+:root{
+  --paper:#F5F6F3; --card:#FFFFFF; --ink:#1B222C; --muted:#5D6672; --line:#D9DDD7; --line2:#EBEEE9;
+  --accent:#2E4A5E; --accent-ink:#FFFFFF;
+  --blue:#2463D6; --blue-bg:#E4ECFB; --yellow:#C98A12; --yellow-bg:#FBF0D6; --red:#CF3F3F; --red-bg:#FBE3E3;
+  --map-land:#EEF0EA; --map-water:#BFD6E8; --map-road:#FFFFFF; --map-road-case:#C6CBC4; --map-hwy:#F0B94A; --map-trunk:#F7DDA0; --map-rail:#8E5B9A; --map-rail2:#D9A400; --map-rail3:#1F5FBF;
+  --shadow:0 1px 2px rgba(20,30,40,.06),0 6px 20px rgba(20,30,40,.06);
+  --mono:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --serif:"Noto Serif KR","Apple SD Gothic Neo",serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#151A20; --card:#1E252D; --ink:#E7EAEE; --muted:#9AA4B0; --line:#333C46; --line2:#2A323B;
+    --accent:#8FB4CC; --accent-ink:#0F171E;
+    --blue:#6D9BFF; --blue-bg:#1B2A47; --yellow:#E6B04A; --yellow-bg:#3A2F14; --red:#F06B6B; --red-bg:#452020;
+    --map-land:#1B2129; --map-water:#2B4A66; --map-road:#5A6470; --map-road-case:#0F1318; --map-hwy:#C9913A; --map-trunk:#8C7645; --map-rail:#B58BC4; --map-rail2:#E0B740; --map-rail3:#6D9BFF;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#151A20; --card:#1E252D; --ink:#E7EAEE; --muted:#9AA4B0; --line:#333C46; --line2:#2A323B;
+  --accent:#8FB4CC; --accent-ink:#0F171E;
+  --blue:#6D9BFF; --blue-bg:#1B2A47; --yellow:#E6B04A; --yellow-bg:#3A2F14; --red:#F06B6B; --red-bg:#452020;
+  --map-land:#1B2129; --map-water:#2B4A66; --map-road:#5A6470; --map-road-case:#0F1318; --map-hwy:#C9913A; --map-trunk:#8C7645; --map-rail:#B58BC4; --map-rail2:#E0B740; --map-rail3:#6D9BFF;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--mono);font-size:14px;line-height:1.55;padding-inline:16px;padding-block:0 32px}
+h1,h2,h3{margin:0;text-wrap:balance}
+h1{font-family:var(--serif);font-size:22px;font-weight:700;letter-spacing:-.01em}
+h2{font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:8px}
+h3{font-size:14px;font-weight:600}
+p{margin:0 0 10px}
+a{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.num{font-variant-numeric:tabular-nums}
+.small{font-size:12px;color:var(--muted)}
+.wrap{max-width:1400px;margin:0 auto}
+header.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-block:16px 10px;border-bottom:1px solid var(--line)}
+header.top .sub{color:var(--muted);font-size:13px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-block:12px 14px}
+.tabs button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-weight:500}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.panel[hidden]{display:none}
+.nl{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow);margin-bottom:14px}
+.nl textarea{width:100%;min-height:64px;resize:vertical;border-radius:8px}
+.nl .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 12px;font-weight:500}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:3px 9px;border-radius:999px;background:var(--line2);color:var(--ink)}
+.chip b{font-weight:600}
+.grid{display:grid;grid-template-columns:350px 1fr;gap:14px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;box-shadow:var(--shadow)}
+.cond .f{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;padding-block:7px;border-bottom:1px solid var(--line2)}
+.cond .f:last-child{border-bottom:0}
+.cond label{font-weight:500}
+.cond input[type=range]{width:140px}
+.cond input[type=number]{width:90px;text-align:right}
+.cond input[type=text]{width:150px}
+.cond .v{color:var(--muted);font-size:12px;grid-column:1/-1}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-block:8px;align-items:center}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.dot-b{background:var(--blue)}.dot-y{background:var(--yellow)}.dot-r{background:var(--red)}
+.mapbox{background:var(--map-land);border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative;touch-action:none}
+.mapbox svg{display:block;width:100%;height:auto;max-height:80vh;cursor:grab;will-change:transform}
+.mapbox svg.drag{cursor:grabbing}
+.mapbox text{font-family:var(--mono);fill:var(--muted)}
+.mapbox .lbl{font-weight:600;fill:var(--ink);opacity:.7}
+.mk{cursor:pointer}
+.mk circle{stroke:var(--card);stroke-width:1.2}
+.mk.sel circle{stroke:var(--ink);stroke-width:2.4}
+.mk text{fill:var(--ink);paint-order:stroke;stroke:var(--map-land);stroke-width:3px;stroke-linejoin:round}
+.mk.dim{opacity:.25}
+.maptools{position:absolute;left:10px;top:10px;display:flex;gap:6px;flex-wrap:wrap;z-index:2;max-width:calc(100% - 20px)}
+.maptools button{font-size:12px;padding:4px 9px;border-radius:999px;border:1px solid var(--line);background:var(--card)}
+.maptools button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.list{display:grid;gap:8px;margin-top:12px}
+.item{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer}
+.item:hover,.item.sel{border-color:var(--accent)}
+.item .st{width:12px;height:12px;border-radius:50%;margin-top:4px}
+.item .n{font-weight:600}
+.item .m{font-size:12px;color:var(--muted)}
+.item .p{text-align:right;font-weight:600;white-space:nowrap}
+.item .p small{display:block;font-weight:400;color:var(--muted);font-size:11px}
+.st-blue{background:var(--blue)}.st-yellow{background:var(--yellow)}.st-red{background:var(--red)}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px}
+.badge.blue{background:var(--blue-bg);color:var(--blue)}.badge.yellow{background:var(--yellow-bg);color:var(--yellow)}.badge.red{background:var(--red-bg);color:var(--red)}
+.detail h2{font-size:20px}
+.detail .kv{display:grid;grid-template-columns:120px 1fr;gap:4px 10px;font-size:13px;margin-block:8px}
+.detail .kv dt{color:var(--muted)}
+.detail .kv dd{margin:0}
+.crit{display:grid;gap:6px;margin-block:10px}
+.crit div{display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;font-size:13px}
+.crit i{width:12px;height:12px;border-radius:50%;margin-top:4px;display:block}
+.sizes{display:flex;flex-wrap:wrap;gap:6px;margin-block:6px}
+.sizes button{border:1px solid var(--line);background:var(--card);border-radius:6px;padding:4px 8px;font-size:12px}
+.sizes button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+.bar{height:8px;border-radius:4px;background:var(--line2);position:relative;overflow:hidden;margin:4px 0 2px}
+.bar span{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.two{grid-template-columns:1fr}}
+.calc .f{display:grid;grid-template-columns:1fr 120px;gap:6px 10px;align-items:center;padding-block:6px;border-bottom:1px solid var(--line2)}
+.calc .f:last-child{border-bottom:0}
+.calc input[type=number]{text-align:right}
+.calc .f .small{grid-column:1/-1}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line2);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:12px}
+td.r,th.r{text-align:right}
+.tbl{overflow-x:auto}
+.total{font-weight:700;border-top:2px solid var(--line)}
+.callout{border-left:3px solid var(--accent);padding:8px 12px;background:var(--line2);border-radius:0 8px 8px 0;margin-block:10px}
+.callout.warn{border-color:var(--yellow);background:var(--yellow-bg)}
+.callout.bad{border-color:var(--red);background:var(--red-bg)}
+.callout.good{border-color:var(--blue);background:var(--blue-bg)}
+.devs{margin:4px 0 0 0;padding-left:0;list-style:none;font-size:13px}.devs li{padding:5px 0;border-bottom:1px dashed var(--line2)}.devs li:last-child{border-bottom:0}
+.conf{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-right:6px;vertical-align:1px}.conf.c1{background:var(--blue-bg);color:var(--blue)}.conf.c2{background:var(--yellow-bg);color:var(--yellow)}.conf.c3{background:var(--line2);color:var(--muted)}
+
+.mapbox svg{max-height:82vh}
+.tip{position:absolute;z-index:5;pointer-events:none;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.45;box-shadow:var(--shadow);max-width:280px}
+.tip b{font-size:13px}
+.tip .tr{color:var(--muted);margin-top:3px}
+.tip .tr span{display:inline-block;margin-right:6px}
+.dong{fill-opacity:.32;stroke:var(--ink);stroke-opacity:.28;stroke-width:.7;vector-effect:non-scaling-stroke;cursor:pointer;transition:fill-opacity .12s}
+.dong:hover{fill-opacity:.55}
+.dong.on{fill-opacity:.62;stroke-opacity:.9;stroke-width:1.4}
+.dong.off{fill-opacity:.10}
+.gulbl{font-weight:700;fill:var(--ink);opacity:.75;paint-order:stroke;stroke:var(--map-land);stroke-width:4px;stroke-linejoin:round;cursor:pointer}
+.gulbl:hover{opacity:1;text-decoration:underline}
+.rcard{position:absolute;right:10px;top:10px;z-index:4;width:min(300px,calc(100% - 20px));background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;box-shadow:var(--shadow);font-size:12px}
+.rcard h3{font-size:14px;margin-bottom:4px;font-family:var(--serif)}
+.rcard .bars{display:flex;height:8px;border-radius:4px;overflow:hidden;margin:6px 0}
+.rcard .bars span{display:block;height:100%}
+.rcard .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;margin:6px 0}
+.rcard .kv dt{color:var(--muted)}.rcard .kv dd{margin:0}
+.rcard .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.rcard .btn{padding:4px 9px;font-size:12px}
+.rcard .x{position:absolute;right:8px;top:6px;border:0;background:none;color:var(--muted);font-size:16px;line-height:1;padding:2px 4px}
+@media (max-width:700px){.rcard{position:static;width:100%;margin-top:6px}}
+.rsum .kv{grid-template-columns:150px 1fr}
+.rsum .bars{display:flex;height:10px;border-radius:5px;overflow:hidden;margin:4px 0}
+.rsum .bars span{display:block;height:100%}
+.rsum .tbl table{font-size:12px}
+.rsum .top td{cursor:pointer}
+.rsum .top tr:hover td{background:var(--line2)}
+.dlbl{font-weight:600;fill:var(--ink);opacity:.8;paint-order:stroke;stroke:var(--map-land);stroke-width:3px;stroke-linejoin:round;pointer-events:none}
+.stn{pointer-events:none}
+.rlbl{fill:var(--muted);font-weight:600;paint-order:stroke;stroke:var(--map-land);stroke-width:3px;pointer-events:none}
+.stn text{fill:var(--ink);opacity:.85;paint-order:stroke;stroke:var(--map-land);stroke-width:3px}
+.rd{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.tree{margin-bottom:12px}
+.tree .gu{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--line2);cursor:pointer;font-weight:600}
+.tree .gu .cnt{margin-left:auto;font-size:11px;color:var(--muted);font-weight:400;white-space:nowrap}
+.tree .gu .tg{width:18px;text-align:center;color:var(--muted)}
+.tree .dongs{display:flex;flex-wrap:wrap;gap:4px;padding:6px 0 8px 18px}
+.tree .dongs button,.tree .gu button.pick{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--card)}
+.tree .dongs button[aria-pressed="true"],.tree .gu button.pick[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tree .dongs button i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:4px;vertical-align:1px}
+.maplegend{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:6px}
+.maplegend i{display:inline-block;width:14px;height:3px;vertical-align:2px;margin-right:4px;border-radius:2px}
+
+.report{max-width:900px}
+.report section{margin-bottom:26px}
+.report h2{font-size:19px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.report ul{margin:0 0 10px 0;padding-left:20px}
+.report li{margin-bottom:4px}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:4px;margin-right:4px;vertical-align:1px}
+.tag.fact{background:var(--blue-bg);color:var(--blue)}.tag.assume{background:var(--yellow-bg);color:var(--yellow)}.tag.check{background:var(--red-bg);color:var(--red)}
+.rec{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px;background:var(--card)}
+.rec h3{font-size:16px;font-family:var(--serif);margin-bottom:6px}
+.rec .cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:13px}
+@media (max-width:760px){.rec .cols{grid-template-columns:1fr}}
+.rec .cols h4{margin:0 0 4px;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.foot{margin-top:24px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:12px}
+.trades{max-height:260px;overflow:auto;border:1px solid var(--line2);border-radius:6px}
+.trades table{font-size:12px}
+.trades th{position:sticky;top:0;background:var(--card)}
+.chart{width:100%;height:auto;display:block;margin-top:4px}
+.chart text{font-size:10px;fill:var(--muted);font-family:var(--mono)}
+.src{font-size:11px;color:var(--muted)}
+.more{width:100%;margin-top:8px}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <h1>광교 출근 집찾기</h1>
+  <span class="sub"><b id="hdrN">-</b>개 단지 · 국토부 실거래(매매 2024-10~2026-09, 전세 2025-10~2026-09) · 직방 단지정보 · 네이버 부동산 호가. 조건을 넣으면 <b style="color:var(--blue)">파랑(적합)</b> · <b style="color:var(--yellow)">노랑(개선하면 가능)</b> · <b style="color:var(--red)">빨강(부적합)</b>으로 판정합니다. 기준일 2026-09-25.</span>
+</header>
+
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-tab="map">지도 · 판정</button>
+  <button role="tab" aria-selected="false" data-tab="calc">예산 · 대출 계산</button>
+  <button role="tab" aria-selected="false" data-tab="report">분석 리포트</button>
+  <button role="tab" aria-selected="false" data-tab="facts">사실 · 가정 · 데이터 출처</button>
+</div>
+
+<div class="panel" id="tab-map">
+  <div class="nl">
+    <label for="nlInput" style="font-weight:600">문장으로 조건 입력</label>
+    <textarea id="nlInput">부부와 자녀 3명(초4·초1·4세). 직장은 광교역 앞, 편도 60분 이내. 방 4개 선호, 3개도 가능. 중학교 학업 분위기와 학원 접근성이 중요하고, 교육환경이 좋으면 출퇴근 초과도 검토. 500세대 이상. 예산은 계산기 결과를 따름.</textarea>
+    <div class="row">
+      <button class="btn primary" id="nlApply">문장 해석해서 조건 반영</button>
+      <button class="btn" id="nlReset">기본 조건으로</button>
+      <span class="small">예: "예산 8억, 방 3개, 40분 이내, 2010년 이후 신축, 1000세대 이상, 학군 최우선, 영통·수지만, 동탄은 제외"</span>
+    </div>
+    <div class="chips" id="nlChips" style="margin-top:8px"></div>
+  </div>
+
+  <div class="grid">
+    <aside>
+      <div class="card tree" id="tree"></div>
+      <div class="card cond">
+        <h3 style="margin-bottom:6px">조건값</h3>
+        <div class="f"><label for="cBudget">매수 예산 (억)</label><input type="number" id="cBudget" step="0.1" min="1" max="40" value="7.0"><div class="v" id="cBudgetNote"></div></div>
+        <div class="f"><label for="cSize">기준 전용면적</label><select id="cSize"><option value="84">84㎡ (34평형)</option><option value="99">99~101㎡ (39~41평형)</option><option value="114">114㎡ 이상 (45평형+)</option><option value="74">74㎡ (30평형)</option><option value="59">59㎡ (24~25평형)</option></select></div>
+        <div class="f"><label for="cRooms">방 개수</label><select id="cRooms"><option value="4">4개 선호 · 3개 허용</option><option value="4s">4개 필수</option><option value="3">3개 이상</option></select><div class="v">방 수는 면적·준공연도로 추정(84㎡ 2015년 이후 신축은 3~4). 실제 구조는 평면도 확인.</div></div>
+        <div class="f"><label for="cCommute">편도 출근 한도 (분)</label><input type="range" id="cCommute" min="15" max="90" step="5" value="60"><div class="v">현재 <b id="cCommuteV" class="num">60</b>분 · 광교역(경기대) 앞, 출근시간대 추정</div></div>
+        <div class="f"><label for="cMode">이동 수단</label><select id="cMode"><option value="best">자가용·대중교통 중 빠른 쪽</option><option value="car">자가용</option><option value="transit">대중교통</option></select></div>
+        <div class="f"><label for="cEdu">교육환경 최소 등급 (1~5)</label><input type="range" id="cEdu" min="1" max="5" step="1" value="3"><div class="v">현재 <b id="cEduV">3</b> · 동(洞) 단위 평판·학원가 종합. 미평가 동은 3으로 간주</div></div>
+        <div class="f"><label for="cEduOver">교육 4등급 이상이면 출근 15분 초과 허용</label><input type="checkbox" id="cEduOver" checked></div>
+        <div class="f"><label for="cBuilt">준공 연도 이후</label><input type="number" id="cBuilt" step="1" min="1980" max="2026" value="1990"></div>
+        <div class="f"><label for="cUnits">최소 세대수</label><input type="number" id="cUnits" step="50" min="0" value="300"></div>
+        <div class="f"><label for="cTrade">최근 12개월 실거래 있는 단지만</label><input type="checkbox" id="cTrade" checked></div>
+        <div class="f"><label for="cNoReg">규제지역(토허구역) 제외</label><input type="checkbox" id="cNoReg"></div>
+        <div class="f"><label for="cInclude">포함 지역만 (쉼표)</label><input type="text" id="cInclude" placeholder="예: 영통, 수지"></div>
+        <div class="f"><label for="cExclude">제외 지역 (쉼표)</label><input type="text" id="cExclude" placeholder="예: 동탄, 오산"></div>
+      </div>
+      <div class="legend"><span><i class="dot-b"></i>적합</span><span><i class="dot-y"></i>개선</span><span><i class="dot-r"></i>부적합</span><span id="cnt"></span></div>
+      <div class="list" id="list"></div>
+      <button class="btn more" id="moreBtn" hidden>더 보기</button>
+    </aside>
+
+    <main>
+      <div class="mapbox" id="mapbox">
+        <div class="maptools">
+          <button id="tgAll" aria-pressed="true">전체</button>
+          <button id="tgBlue" aria-pressed="false">파랑만</button>
+          <button id="tgBY" aria-pressed="false">파랑+노랑</button>
+          <button id="zGg">광교</button><button id="zYt">영통</button><button id="zSj">수지</button><button id="zDt">동탄</button><button id="zAll">전체보기</button>
+          <button id="zIn">＋</button><button id="zOut">－</button>
+        </div>
+        <svg id="map" viewBox="0 0 1000 1070" role="img" aria-label="광교역 주변 아파트 단지 지도"></svg>
+        <div id="tip" class="tip" hidden></div>
+        <div id="regionCard" class="rcard" hidden></div>
+      </div>
+      <div class="maplegend"><span><i style="background:#D4003B"></i>신분당선</span><span><i style="background:#FABE00"></i>수인분당선</span><span><i style="background:#0052A4"></i>1호선·경부선</span><span><i style="background:#9A6292"></i>GTX·SRT</span><span><i style="background:var(--map-hwy);height:4px"></i>고속도로</span><span><i style="background:var(--map-trunk);height:3px"></i>국도·간선</span><span><i style="background:var(--map-road);border:1px solid var(--map-road-case);height:3px"></i>주요도로</span><span><i style="background:var(--card);border:2px solid var(--ink);width:8px;height:8px;border-radius:50%"></i>역</span><span><i style="background:var(--map-water);height:6px"></i>하천·호수</span><span>구·동 경계: 행정안전부 행정동(2026-07) · 도로·철도·수계: OpenStreetMap</span></div>
+      <p class="small" style="margin-top:6px">휠로 확대, 드래그로 이동. 축소 상태에서 구를 클릭하면 구 요약(시세·판정 분포·동별 표·호재)이 아래에 뜨고, 확대 상태에서 동을 클릭하면 그 동으로 좁혀지며 동 요약이 뜹니다. 마우스를 점에 올리면 단지 특징이 뜹니다. 좌표는 직방 단지정보 기준(동 중심 표기 단지는 점선 테두리 '위치 근사'). 기준가 = 해당 면적의 최근 3개월 실거래 중위값 → 없으면 12개월 중위값 → 마지막 거래 → 네이버 호가 순.</p>
+      <div class="card detail" id="detail"><p class="small">지도의 점이나 왼쪽 목록을 클릭하면 실거래 내역, 시세 추이, 전세, 판정 근거, 학교·호재가 나옵니다.</p></div>
+    </main>
+  </div>
+</div>
+
+<div class="panel" id="tab-calc" hidden>
+  <div class="two">
+    <div class="card calc">
+      <h2>1) 매도 대금과 순현금</h2>
+      <p class="small">사당 반석블레스(11층·약 24평, 2016년 준공 49세대) · 평택 소사벌 효성해링턴코트(2층 테라스·34평). 값을 바꾸면 모든 탭에 반영됩니다. 두 단지의 실거래는 아래 표에서 실제 데이터로 확인합니다.</p>
+      <div id="ownedTrades"></div>
+      <div class="f"><label for="kSeoulPrice">사당 반석블레스 예상 매도가 (억)</label><input type="number" id="kSeoulPrice" step="0.1" value="7.4"><span class="small" id="kSeoulHint"></span></div>
+      <div class="f"><label for="kSeoulJeonse">전세보증금 반환 (억)</label><input type="number" id="kSeoulJeonse" step="0.1" value="4.5"></div>
+      <div class="f"><label for="kSeoulAcq">사당 취득가 (억)</label><input type="number" id="kSeoulAcq" step="0.1" value="5.0"><span class="small">가정. 양도세 계산용. 실제 취득가·취득일·거주 이력 확인 필요.</span></div>
+      <div class="f"><label for="kSeoulYears">사당 보유 연수</label><input type="number" id="kSeoulYears" step="1" value="8"></div>
+      <div class="f"><label for="kSeoulTaxMode">사당 양도세 시나리오</label><select id="kSeoulTaxMode"><option value="normal">일반과세(1주택이지만 비과세 요건 미충족)</option><option value="exempt">1세대1주택 비과세(2년 보유·거주 요건 충족)</option><option value="heavy">2주택 중과(+20%p, 장특공 배제)</option></select><span class="small">2026-05-10부터 다주택 중과 유예 종료. 서울 전역이 조정대상지역이므로 <b>평택을 먼저 팔고 1주택 상태로 사당을 팔면</b> 중과를 피할 수 있습니다.</span></div>
+      <div class="f" style="margin-top:8px"><label for="kPtPrice">평택 효성해링턴코트 예상 매도가 (억)</label><input type="number" id="kPtPrice" step="0.1" value="3.9"><span class="small" id="kPtHint"></span></div>
+      <div class="f"><label for="kPtLoan">평택 대출 잔액 상환 (억)</label><input type="number" id="kPtLoan" step="0.1" value="1.7"></div>
+      <div class="f"><label for="kMoving">이사·수리·가전 (억)</label><input type="number" id="kMoving" step="0.05" value="0.2"></div>
+      <div class="f"><label for="kReserve">비상금 유지 (억)</label><input type="number" id="kReserve" step="0.05" value="0.3"></div>
+      <div class="f"><label for="kExtra">추가 투입 현금 (억)</label><input type="number" id="kExtra" step="0.1" value="0"></div>
+    </div>
+    <div class="card calc">
+      <h2>2) 대출: 월 상환 한도 vs 은행 승인 한도</h2>
+      <div class="f"><label for="kMonthly">월 원리금 상환 한도 (만원)</label><input type="number" id="kMonthly" step="10" value="100"></div>
+      <div class="f"><label for="kRate">금리 (연 %)</label><input type="number" id="kRate" step="0.1" value="4.4"><span class="small">2026-08 예금은행 주담대 평균 4.36% (고정 4.76 · 변동 4.35). 기준금리 3.00%.</span></div>
+      <div class="f"><label for="kTerm">만기 (년)</label><input type="number" id="kTerm" step="5" value="30"></div>
+      <div class="f"><label for="kIncome">가구 세전 연소득 (만원)</label><input type="number" id="kIncome" step="100" value="7000"></div>
+      <div class="f"><label for="kOtherDebt">기타 대출 연 원리금 (만원)</label><input type="number" id="kOtherDebt" step="50" value="0"></div>
+      <div class="f"><label for="kRegion">매수 지역 규제 여부</label><select id="kRegion"><option value="reg">규제지역 (수원 영통·장안·팔달, 용인 수지) LTV 40%</option><option value="free">비규제 (화성, 용인 기흥, 수원 권선, 오산) LTV 70%</option></select></div>
+      <div id="loanOut" style="margin-top:10px"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h2>3) 매수 예산 산출</h2>
+    <div class="tbl"><table id="budgetTbl"></table></div>
+    <div id="budgetCallout"></div>
+    <p class="small">취득세 6억 이하 1%, 6~9억 1~3% 비례, 9억 초과 3% + 지방교육세. 중개보수는 법정 상한(협의 전). 양도세는 기본세율 6~45% 누진 + 지방소득세 10%, 장기보유특별공제 연 2%(최대 30%) 단순 적용. 세무사 검증 필요.</p>
+  </div>
+</div>
+
+<div class="panel" id="tab-report" hidden><div class="report" id="report"></div></div>
+<div class="panel" id="tab-facts" hidden><div class="report" id="facts"></div></div>
+
+<div class="foot">의사결정 보조 도구입니다. 실거래는 국토교통부 실거래가 공개시스템(계약일 기준, 해제 건 제외), 단지 좌표·세대수·사용승인은 직방 단지정보, 호가는 네이버 부동산 모바일에서 2026-09-25에 수집했으며 이후 변동은 반영되지 않습니다. 계약 전 원본과 학교알리미·학구도·교육지원청·은행·세무사 확인을 거치세요. 투자 자문이 아닙니다.</div>
+</div>
+
+<script>
+/*__DATA__*/
+/* ---------------- 지역 메타 (동 단위, 분석가 입력) ---------------- */
+const WORK={lat:37.3017,lng:127.0448};
+const REG_GU={'수원시 영통구':1,'수원시 장안구':1,'수원시 팔달구':1,'용인시 수지구':1,'서울 동작구':1};
+// car/transit: 광교역 앞 출근시간대 편도 분(추정). rep/acad 1~5. mid: 배정 후보 중학교(확인 필요)
+const DONG_META={
+ '이의동':{area:'광교',car:6,transit:10,tnote:'광교중앙역·광교역 도보/버스',rep:5,acad:4,mid:'광교중·다산중·연무중(광교중학군)',data:'광교중 국어 평균 89.0·A등급 59.9%(아파트미). 연무중 특목고 9.4%(2024). 광교중학군 근거리 배정은 2028 이의8초·중 개교 후 재점검.',high:'수원 평준화'},
+ '원천동':{area:'광교',car:10,transit:15,tnote:'광교중앙역 도보 10분 또는 버스',rep:5,acad:4,mid:'광교중·다산중(광교중학군) / 원천동 구도심은 원천중',data:'광교중학군 공통. 원천동 구축(아주대 인근)은 광교 학군 아님.',high:'수원 평준화'},
+ '하동':{area:'광교',car:12,transit:20,tnote:'버스 → 광교중앙역',rep:5,acad:4,mid:'광교중학군',data:'광교중학군 공통',high:'수원 평준화'},
+ '상현동':{area:'광교(용인)',car:9,transit:14,tnote:'상현역 → 신분당선 2정거장',rep:4,acad:3,mid:'상현중·서원중(용인 수지 학군)',data:'광교웰빙타운은 행정구역 용인이라 수원 광교중학군 아님. 학원은 광교·수지 이용.',high:'용인 평준화'},
+ '영통동':{area:'영통',car:16,transit:30,tnote:'영통역·버스 → 광교',rep:5,acad:5,mid:'영덕중·영일중·영통중·청명중',data:'영덕중 특목고 진학 7.3%(2024, 수원 2위). 영통역 학원가 밀집.',high:'수원 평준화'},
+ '망포동':{area:'영통',car:20,transit:35,tnote:'망포역 → 버스 환승',rep:4,acad:3,mid:'망포중·태장중',data:'신축 밀집으로 평판 상승 중, 공개 성취도 축적 짧음',high:'수원 평준화'},
+ '매탄동':{area:'매탄',car:12,transit:25,tnote:'매탄권선역·버스',rep:3,acad:3,mid:'매원중·매탄중·수원중',data:'매탄 학군 중위, 삼성 인접 수요',high:'수원 평준화'},
+ '신동':{area:'영통',car:20,transit:35,tnote:'망포역',rep:4,acad:3,mid:'망포중·태장중',data:'망포 생활권',high:'수원 평준화'},
+ '풍덕천동':{area:'수지',car:20,transit:20,tnote:'수지구청역 → 신분당선 4정거장',rep:5,acad:5,mid:'정평중·수지중·이현중',data:'수지 풍덕천 학원가 경기남부 최상위권 평판',high:'용인 평준화'},
+ '성복동':{area:'수지',car:15,transit:15,tnote:'성복역 → 신분당선 3정거장',rep:4,acad:4,mid:'성복중·홍천중',data:'성복 학군 평판 양호',high:'용인 평준화'},
+ '신봉동':{area:'수지',car:18,transit:28,tnote:'버스 → 성복역',rep:4,acad:3,mid:'신봉중·홍천중',data:'신봉 평판 양호, 학원은 성복·수지',high:'용인 평준화'},
+ '동천동':{area:'수지',car:22,transit:22,tnote:'동천역 → 신분당선 5정거장',rep:4,acad:4,mid:'동천중·손곡중',data:'동천 학군 평판 양호',high:'용인 평준화'},
+ '죽전동':{area:'죽전',car:22,transit:32,tnote:'죽전역 → 미금 환승 → 신분당선',rep:5,acad:5,mid:'대덕중·죽전중',data:'죽전 학원가·대덕중 평판 상위',high:'용인 평준화'},
+ '보정동':{area:'기흥(구성)',car:18,transit:38,tnote:'구성역(수인분당·GTX-A) → 미금 환승',rep:3,acad:3,mid:'보정중·구성중',data:'중위, 학원은 죽전 이용',high:'용인 평준화'},
+ '마북동':{area:'기흥(마북)',car:20,transit:42,tnote:'버스 → 구성역',rep:3,acad:2,mid:'구성중',data:'중위, 학원가 약함',high:'용인 평준화'},
+ '구갈동':{area:'기흥(구갈)',car:17,transit:42,tnote:'기흥역 → 환승',rep:3,acad:3,mid:'신갈중·구갈중',data:'중위',high:'용인 평준화'},
+ '신갈동':{area:'기흥(신갈)',car:15,transit:40,tnote:'신갈역',rep:3,acad:2,mid:'신갈중',data:'중위',high:'용인 평준화'},
+ '중동':{area:'동백',car:25,transit:50,tnote:'용인경전철 → 기흥 환승',rep:3,acad:3,mid:'어정중·동백중',data:'동백 학원가 중규모',high:'용인 평준화'},
+ '동백동':{area:'동백',car:25,transit:50,tnote:'용인경전철 → 기흥 환승',rep:3,acad:3,mid:'동백중·어정중',data:'동백 학원가 중규모',high:'용인 평준화'},
+ '영덕동':{area:'기흥(흥덕)',car:13,transit:30,tnote:'버스 → 광교중앙역(흥덕은 광교 인접)',rep:4,acad:3,mid:'흥덕중',data:'흥덕지구, 광교 학원 이용권',high:'용인 평준화'},
+ '서천동':{area:'기흥(서천)',car:15,transit:38,tnote:'버스',rep:3,acad:2,mid:'서천중',data:'중위',high:'용인 평준화'},
+ '언남동':{area:'기흥(구성)',car:19,transit:40,tnote:'구성역',rep:3,acad:3,mid:'구성중',data:'중위',high:'용인 평준화'},
+ '청덕동':{area:'동백',car:24,transit:48,tnote:'버스',rep:3,acad:3,mid:'청덕중',data:'중위',high:'용인 평준화'},
+ '상갈동':{area:'기흥(상갈)',car:16,transit:38,tnote:'상갈역',rep:3,acad:2,mid:'상갈중',data:'중위',high:'용인 평준화'},
+ '반송동':{area:'동탄1',car:25,transit:45,tnote:'광역버스',rep:4,acad:4,mid:'반송중·한빛중·석우중',data:'동탄1 북광장·반송 학원가 성숙',high:'화성 비평준화'},
+ '석우동':{area:'동탄1',car:25,transit:45,tnote:'광역버스',rep:4,acad:4,mid:'석우중·반송중',data:'동탄1 학원가 이용',high:'화성 비평준화'},
+ '능동':{area:'동탄1',car:28,transit:50,tnote:'버스',rep:3,acad:3,mid:'능동중·반송중',data:'동탄1 학원 차량 이용',high:'화성 비평준화'},
+ '청계동':{area:'동탄2',car:30,transit:50,tnote:'동탄역',rep:4,acad:4,mid:'청계중 등(배정 확인)',data:'청계동 학원가 동탄2 중심',high:'화성 비평준화'},
+ '영천동':{area:'동탄2',car:28,transit:48,tnote:'동탄역',rep:4,acad:3,mid:'동탄2 중학교(배정 확인)',data:'형성 단계',high:'화성 비평준화'},
+ '오산동':{area:'동탄2',car:30,transit:50,tnote:'동탄역',rep:4,acad:4,mid:'동탄2 중학교(배정 확인)',data:'동탄역 인접',high:'화성 비평준화'},
+ '여울동':{area:'동탄2',car:30,transit:50,tnote:'동탄역',rep:4,acad:4,mid:'동탄2 중학교(배정 확인)',data:'동탄역 인접 신축',high:'화성 비평준화'},
+ '송동':{area:'동탄2',car:28,transit:50,tnote:'광역버스',rep:4,acad:4,mid:'동탄2 중학교(배정 확인)',data:'호수공원 학군 평판 상승',high:'화성 비평준화'},
+ '목동':{area:'동탄2(목동)',car:32,transit:55,tnote:'버스 → 동탄역',rep:3,acad:3,mid:'목동·산척 신설중(배정 확인)',data:'외곽, 학원은 청계·북광장',high:'화성 비평준화'},
+ '산척동':{area:'동탄2(목동)',car:33,transit:55,tnote:'버스',rep:3,acad:3,mid:'신설중(배정 확인)',data:'외곽',high:'화성 비평준화'},
+ '장지동':{area:'동탄2(신동)',car:35,transit:60,tnote:'버스',rep:3,acad:2,mid:'신설중(배정 확인)',data:'남부 외곽',high:'화성 비평준화'},
+ '중동(화성)':{area:'동탄2(목동)',car:33,transit:55,tnote:'버스',rep:3,acad:3,mid:'신설중',data:'외곽',high:'화성 비평준화'},
+ '금곡동':{area:'동탄2',car:30,transit:52,tnote:'버스',rep:3,acad:3,mid:'신설중(배정 확인)',data:'동탄2 서부',high:'화성 비평준화'},
+ '병점동':{area:'병점',car:30,transit:50,tnote:'1호선 병점 → 수원 환승',rep:2,acad:2,mid:'병점중·진안중',data:'학군·학원가 약함',high:'화성 비평준화'},
+ '진안동':{area:'병점',car:30,transit:50,tnote:'1호선 병점',rep:2,acad:2,mid:'진안중',data:'약함',high:'화성 비평준화'},
+ '기산동':{area:'병점',car:32,transit:52,tnote:'버스',rep:2,acad:2,mid:'기산중(배정 확인)',data:'약함',high:'화성 비평준화'},
+ '반월동':{area:'동탄1',car:24,transit:45,tnote:'버스',rep:3,acad:3,mid:'반월중',data:'중위',high:'화성 비평준화'},
+ '오산시 세교동':{area:'오산',car:40,transit:70,tnote:'버스 → 동탄/수원 환승',rep:2,acad:2,mid:'세교중',data:'약함',high:'오산 비평준화'},
+ '정자동':{area:'장안(정자)',car:25,transit:45,tnote:'버스 → 광교',rep:4,acad:4,mid:'정자중·천천중',data:'천천중 특목고 4.9%(2024, 수원 3위)',high:'수원 평준화'},
+ '천천동':{area:'장안(정자)',car:26,transit:45,tnote:'버스',rep:4,acad:4,mid:'천천중',data:'천천중 특목고 4.9%(2024)',high:'수원 평준화'},
+ '조원동':{area:'장안(정자)',car:24,transit:42,tnote:'버스',rep:3,acad:3,mid:'조원중',data:'중위',high:'수원 평준화'},
+ '율전동':{area:'장안(정자)',car:28,transit:48,tnote:'성균관대역',rep:3,acad:3,mid:'율전중',data:'중위',high:'수원 평준화'},
+ '화서동':{area:'화서',car:25,transit:45,tnote:'화서역·버스',rep:3,acad:3,mid:'화서중·수성중',data:'중위',high:'수원 평준화'},
+ '인계동':{area:'팔달',car:15,transit:30,tnote:'수원시청역·버스',rep:3,acad:3,mid:'수원중·인계중(배정 확인)',data:'중위, 인계 학원가',high:'수원 평준화'},
+ '우만동':{area:'팔달',car:10,transit:25,tnote:'버스',rep:3,acad:3,mid:'수원중(배정 확인)',data:'광교 인접, 아주대',high:'수원 평준화'},
+ '권선동':{area:'권선',car:18,transit:35,tnote:'매탄권선역·버스',rep:3,acad:3,mid:'권선중·곡선중',data:'중위, 비규제',high:'수원 평준화'},
+ '세류동':{area:'권선',car:22,transit:40,tnote:'세류역',rep:2,acad:2,mid:'세류중',data:'약함',high:'수원 평준화'},
+ '곡반정동':{area:'권선',car:20,transit:40,tnote:'버스',rep:3,acad:3,mid:'곡정중',data:'중위, 비규제',high:'수원 평준화'},
+ '호매실동':{area:'호매실',car:30,transit:50,tnote:'버스(신분당선 연장 예정)',rep:3,acad:3,mid:'호매실중',data:'신분당선 호매실 연장 시 광교역 직결',high:'수원 평준화'},
+ '금곡동(수원)':{area:'호매실',car:30,transit:50,tnote:'버스',rep:3,acad:3,mid:'금곡중',data:'호매실지구',high:'수원 평준화'},
+ '평택시 죽백동':{area:'평택(현 거주)',car:60,transit:95,tnote:'1번국도·경부 / 1호선+환승',rep:3,acad:3,mid:'소사벌 학군',data:'현 거주지',high:'평택 비평준화'},
+ '서울 동작구 사당동':{area:'서울(보유)',car:55,transit:70,tnote:'사당역 → 신분당선 환승',rep:3,acad:3,mid:'-',data:'보유 주택 소재',high:'서울'}
+};
+function dongKey(c){ if(c.dong==='중동'&&c.sgg.startsWith('화성')) return '중동(화성)'; if(c.dong==='금곡동'&&c.sgg.startsWith('수원')) return '금곡동(수원)'; if(c.sgg.startsWith('오산')||c.sgg.startsWith('평택')||c.sgg.startsWith('서울')) return c.sgg+' '+c.dong; return c.dong; }
+function haversine(a,b){const R=6371,dl=(b.lat-a.lat)*Math.PI/180,dg=(b.lng-a.lng)*Math.PI/180,x=Math.sin(dl/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dg/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
+function metaFor(c){
+  const m=DONG_META[dongKey(c)]; const km=haversine(c,WORK);
+  if(m) return Object.assign({km,known:true},m);
+  const car=Math.round(6+km*2.3), transit=Math.round(car*1.8+10);
+  const weak=c.sgg.startsWith('오산')||c.sgg.startsWith('평택')||c.sgg.startsWith('화성시 병점');
+  return {km,known:false,area:c.sgg.replace('수원시 ','').replace('용인시 ','').replace('화성시 ','')+' '+c.dong,car,transit,tnote:'거리 기반 추정('+km.toFixed(1)+'km)',rep:weak?2:3,acad:weak?2:3,mid:'미평가(학구도 확인)',data:'이 동은 분석가 평가표에 없어 3등급으로 간주. 학교알리미·학구도 확인 필요.',high:c.sgg.startsWith('화성')||c.sgg.startsWith('오산')||c.sgg.startsWith('평택')?'비평준화':'평준화'};
+}
+function roomsOf(area,built){ if(area<50) return {n:2,txt:'2'}; if(area<70) return {n:3,txt:'3(소형 2 가능)'}; if(area<95) return built&&built>=2015?{n:3.5,txt:'3~4(신축 4베이 확인)'}:{n:3,txt:'3'}; return {n:4,txt:'4'}; }
+
+/* ---------------- 호재 (지역별) ---------------- */
+const DEVS = {
+ '광교':[
+  {t:'신분당선 광교~호매실 연장',when:'2029~2031 목표',conf:'진행',eff:'광교역이 종점에서 중간역으로. 직장 인근 접근성·유동인구 증가'},
+  {t:'경기융합타운 공공기관 추가 이전',when:'2026~2028',conf:'진행',eff:'직주근접 수요 유지'},
+  {t:'이의8초·중 신설(광교중학군 재편)',when:'2028-03',conf:'확정',eff:'과밀 완화. 배정 규칙 변동 위험'},
+  {t:'리스크: 토허구역·2년 실거주, 고가 구간 금리 민감',when:'현재',conf:'확정',eff:''}],
+ '광교(용인)':[{t:'신분당선 호매실 연장 간접 수혜',when:'2029~',conf:'진행',eff:''},{t:'수지 재개발·플랫폼시티와 함께 수지구 재평가',when:'2028~',conf:'진행',eff:'저가 메리트 축소 가능'}],
+ '영통':[
+  {t:'영통 1기 택지(황골·벽적골·살구골·청명·신나무실) 리모델링·재건축 추진',when:'2026~ 추진위·조합 단계',conf:'진행',eff:'장기 가치 상승 여지, 단기 분담금·이주 변수. 단지별 단계 확인'},
+  {t:'삼성전자 수원사업장 인접 고소득 수요',when:'상시',conf:'확정',eff:'수요 안정, 학원가 유지'},
+  {t:'동탄인덕원선 영통·흥덕 통과',when:'2028~2029 개통 목표',conf:'진행',eff:'광교중앙·인덕원 축 전철 연결. 대중교통 출근 개선'},
+  {t:'리스크: 규제지역(토허구역), 1997년 구축 노후·주차',when:'현재',conf:'확정',eff:'수리비 1,000~3,000만'}],
+ '매탄':[{t:'동탄인덕원선 매탄·영통 구간',when:'2028~',conf:'진행',eff:'교통 선택지 추가'},{t:'삼성전자 본사 인접 직주근접',when:'상시',conf:'확정',eff:''},{t:'매탄 구축 정비사업 진행',when:'2026~',conf:'진행',eff:'신축 비율 상승'}],
+ '수지':[
+  {t:'용인 플랫폼시티(구성역 일대) + GTX-A 구성역',when:'2026~2029',conf:'진행',eff:'수지·기흥 경계 대형 개발'},
+  {t:'수지 구축 재개발·리모델링 활성',when:'2026~',conf:'진행',eff:''},
+  {t:'신분당선 직결로 강남·판교 접근 최상',when:'현재',conf:'확정',eff:'광교역 출근도 전철'},
+  {t:'리스크: 토허구역, 16억대 고가 구간',when:'현재',conf:'확정',eff:'이 예산은 구축·소형만'}],
+ '죽전':[{t:'GTX-A 구성역·플랫폼시티 인접',when:'2026~2029',conf:'진행',eff:'구축 재평가 기대'},{t:'분당 생활권·죽전 학원가',when:'현재',conf:'확정',eff:''}],
+ '기흥(구성)':[{t:'플랫폼시티 직접 인접 + GTX-A 구성역',when:'2026~2029',conf:'진행',eff:'후보 중 가장 직접적인 개발 호재. 일정 지연 이력'},{t:'리스크: 개발 기대가 이미 시세에 일부 반영',when:'현재',conf:'확정',eff:''}],
+ '기흥(마북)':[{t:'플랫폼시티 간접 수혜(차 5분)',when:'2029~',conf:'진행',eff:''}],
+ '기흥(구갈)':[{t:'기흥역세권 2단계, 경부고속도로 지하화 논의',when:'구상',conf:'구상',eff:''}],
+ '기흥(신갈)':[{t:'플랫폼시티 인접, 신갈오거리 재생',when:'2027~',conf:'진행',eff:''}],
+ '기흥(흥덕)':[{t:'동탄인덕원선 흥덕역 신설',when:'2028~2029',conf:'진행',eff:'광교중앙 1정거장 연결. 흥덕 구축의 핵심 호재'},{t:'광교 학원가 이용권',when:'현재',conf:'확정',eff:''}],
+ '기흥(서천)':[{t:'영통 인접 생활권',when:'현재',conf:'확정',eff:''}],
+ '기흥(상갈)':[{t:'상갈역 인접, 용인 기흥ICT밸리',when:'2026~',conf:'진행',eff:''}],
+ '동백':[{t:'용인 반도체 클러스터(원삼·이동) 배후',when:'2027~2030',conf:'진행',eff:'임대 수요'},{t:'경전철 연장·도로 확충',when:'구상',conf:'구상',eff:'확정 아님'},{t:'리스크: 광교 방향 도로 의존',when:'현재',conf:'확정',eff:''}],
+ '동탄2':[
+  {t:'GTX-A 동탄~수서 운행, 삼성역 개통 시 완성',when:'2028 목표',conf:'진행',eff:'서울 접근 개선(광교 출근과 무관)'},
+  {t:'동탄 트램 1·2호선',when:'2028~2030',conf:'진행',eff:'동탄 내부 이동·동탄역 접근'},
+  {t:'동탄인덕원선 동탄~영통~인덕원',when:'2028~2029',conf:'진행',eff:'영통·광교중앙 방면 전철. 광교역 출근 개선의 핵심'},
+  {t:'삼성 평택·용인 반도체 배후',when:'2026~2030',conf:'진행',eff:'고소득 수요, 학군 형성 가속'},
+  {t:'리스크: 비평준화 고입, 신설학교 학구 변경, 외곽 공급 과다',when:'현재',conf:'확정',eff:''}],
+ '동탄2(목동)':[{t:'동탄2 동부 학교·상권 마무리, 트램 2호선 구상',when:'2028~',conf:'진행',eff:'외곽 할인 축소 가능'}],
+ '동탄2(신동)':[{t:'트램 남부 구간',when:'2029~',conf:'진행',eff:'현재 버스 의존'}],
+ '동탄1':[{t:'동탄인덕원선(동탄1 북측)·동탄 트램',when:'2028~2030',conf:'진행',eff:'광교·영통 방면 전철. 동탄1 구축 재평가 포인트'},{t:'15~18년차 단지 리모델링 논의',when:'2026~',conf:'구상',eff:''},{t:'북광장·반송 학원가, 동탄국제고',when:'현재',conf:'확정',eff:''}],
+ '병점':[{t:'병점역 복합개발·진안신도시(2028~) 배후',when:'2027~2030',conf:'진행',eff:'인구 유입'},{t:'동탄인덕원선 미경유, 1호선 의존',when:'현재',conf:'확정',eff:''}],
+ '장안(정자)':[{t:'정자·천천 구축 재건축 활성',when:'2026~',conf:'진행',eff:''},{t:'신분당선 호매실 연장(화서·호매실 경유)',when:'2029~2031',conf:'진행',eff:'광교역 전철 직결 가능성, 출근 20분대'},{t:'수원 군공항 이전 논의',when:'구상',conf:'구상',eff:''}],
+ '화서':[{t:'신분당선 호매실 연장 화서역 경유',when:'2029~2031',conf:'진행',eff:'광교역 직결 시 20분대'},{t:'스타필드 수원 상권',when:'현재',conf:'확정',eff:''}],
+ '호매실':[{t:'신분당선 호매실 연장 종점',when:'2029~2031',conf:'진행',eff:'개통 시 광교역 직결 15~20분. 현재는 버스 의존'},{t:'호매실 학원가 성장',when:'현재',conf:'진행',eff:''}],
+ '팔달':[{t:'수원 도심 정비(인계·우만 재개발), 광교 인접',when:'2026~',conf:'진행',eff:''}],
+ '권선':[{t:'비규제, 수원 도심 접근',when:'현재',conf:'확정',eff:'LTV 70%'}],
+ '오산':[{t:'세교2·3지구, 동탄~오산 연계',when:'2027~2032',conf:'진행',eff:'공급 많아 가격 안정, 교육 후행'}]
+};
+function devFor(area){ return DEVS[area]||[]; }
+function devHtml(list){ if(!list.length) return '<p class="small">이 동은 호재 정보가 정리되지 않았습니다.</p>'; return `<ul class="devs">${list.map(d=>`<li><span class="conf ${d.conf==='확정'?'c1':d.conf==='진행'?'c2':'c3'}">${d.conf}</span><b>${d.t}</b> <span class="small">(${d.when})</span>${d.eff?`<div class="small">${d.eff}</div>`:''}</li>`).join('')}</ul>`; }
+
+/* ---------------- 데이터 준비 ---------------- */
+const C = DATA.complexes;
+C.forEach(c=>{ const m=metaFor(c); c.m=m; c.reg=!!REG_GU[c.sgg]; c.sizeKeys=Object.keys(c.sizes).map(Number).sort((a,b)=>a-b); });
+document.getElementById('hdrN').textContent=C.length.toLocaleString();
+const fmtEok=(man)=>man==null?'-':(man/10000).toFixed(man>=100000?1:2)+'억';
+const fmtYM=(ym)=>ym?ym.slice(0,4)+'.'+ym.slice(4):'';
+
+/* ---------------- STATE ---------------- */
+const S = {region:null,hj:new Set(),budget:7.0,budgetManual:false,size:84,rooms:'4',commute:60,mode:'best',edu:3,eduOver:true,builtMin:1990,unitsMin:300,tradeOnly:true,noReg:false,include:[],exclude:[],filter:'all',selected:null,selSize:{},listLimit:60};
+const K = {seoulPrice:7.4,seoulJeonse:4.5,seoulAcq:5.0,seoulYears:8,seoulTaxMode:'normal',ptPrice:3.9,ptLoan:1.7,moving:0.2,reserve:0.3,extra:0,monthly:100,rate:4.4,term:30,income:7000,otherDebt:0,region:'reg'};
+
+/* ---------------- FINANCE ---------------- */
+function pmtToPrincipal(m, ratePct, years){const r=ratePct/100/12,n=years*12;if(r===0)return m*n;return m*(1-Math.pow(1+r,-n))/r;}
+function principalToPmt(P, ratePct, years){const r=ratePct/100/12,n=years*12;if(r===0)return P/n;return P*r/(1-Math.pow(1+r,-n));}
+function acqTax(p, over85){ let rate; if(p<=6) rate=0.01; else if(p<=9) rate=Math.min(0.03,Math.max(0.01,(p*2/3-3)/100)); else rate=0.03; const edu=rate===0.01?0.001:(rate===0.03?0.003:rate*0.1); return p*(rate+edu+(over85?0.002:0)); }
+function brokerFee(p){ let r; if(p<0.5) r=0.006; else if(p<2) r=0.005; else if(p<9) r=0.004; else if(p<12) r=0.005; else if(p<15) r=0.006; else r=0.007; return p*r; }
+function progressiveTax(b){ const br=[[1400,0.06,0],[5000,0.15,126],[8800,0.24,576],[15000,0.35,1544],[30000,0.38,1994],[50000,0.40,2594],[100000,0.42,3594],[Infinity,0.45,6594]]; for(const [lim,rate,ded] of br){ if(b<=lim) return Math.max(0,b*rate-ded); } return 0; }
+function seoulCapGain(){ const gain=K.seoulPrice-K.seoulAcq-brokerFee(K.seoulPrice)-0.03; if(gain<=0) return 0;
+  if(K.seoulTaxMode==='exempt'){ if(K.seoulPrice<=12) return 0; const taxable=gain*(K.seoulPrice-12)/K.seoulPrice; return progressiveTax(Math.max(0,taxable*10000-250))*1.1/10000; }
+  let ltd=K.seoulTaxMode==='heavy'?0:Math.min(0.30,Math.max(0,K.seoulYears-2)*0.02); if(K.seoulYears<3) ltd=0;
+  const base=gain*(1-ltd)*10000-250; let tax=progressiveTax(Math.max(0,base)); if(K.seoulTaxMode==='heavy') tax+=Math.max(0,base)*0.20; return tax*1.1/10000; }
+function loanNumbers(){ const byPmt=pmtToPrincipal(K.monthly,K.rate,K.term)/10000; const stress=K.rate+1.5; const dsrMonthly=(K.income*0.40-K.otherDebt)/12; const byDsr=pmtToPrincipal(Math.max(0,dsrMonthly),stress,K.term)/10000; return {byPmt,byDsr,stress,dsrMonthly}; }
+function ltvCap(p){ const ltv=K.region==='reg'?0.40:0.70; return Math.min(p*ltv, p<=15?6:(p<=25?4:2)); }
+function computeBudget(){ const seoulTax=seoulCapGain(); const seoulNet=K.seoulPrice-K.seoulJeonse-brokerFee(K.seoulPrice)-seoulTax; const ptNet=K.ptPrice-K.ptLoan-brokerFee(K.ptPrice); const cash=seoulNet+ptNet+K.extra-K.moving-K.reserve; const L=loanNumbers();
+  let B=Math.max(1,cash+L.byPmt); for(let i=0;i<40;i++){ const loan=Math.min(L.byPmt,L.byDsr,ltvCap(B)); const nb=cash+loan-acqTax(B,false)-brokerFee(B); if(Math.abs(nb-B)<0.001){B=nb;break;} B=nb; } B=Math.max(0,B);
+  const loan=Math.min(L.byPmt,L.byDsr,ltvCap(B)); return {seoulTax,seoulNet,ptNet,cash,loan,L,B,acq:acqTax(B,false),broker:brokerFee(B),seoulBroker:brokerFee(K.seoulPrice),ptBroker:brokerFee(K.ptPrice)}; }
+
+/* ---------------- 시세 · 판정 ---------------- */
+function pickSizeKey(c){
+  if(S.selSize[c.id]!=null && c.sizes[S.selSize[c.id]]) return S.selSize[c.id];
+  if(!c.sizeKeys.length) return null;
+  const T=S.size; let best=null,bd=1e9;
+  c.sizeKeys.forEach(k=>{ const d=Math.abs(k-T); if(d<bd){bd=d;best=k;} });
+  return best;
+}
+function refPrice(sz){ // 만원
+  if(!sz) return null;
+  if(sz.med3!=null) return {p:sz.med3,src:'최근 3개월 실거래 중위',n:sz.trades.filter(t=>t[0]>='202607').length};
+  if(sz.med12!=null) return {p:sz.med12,src:'최근 12개월 실거래 중위',n:sz.n12};
+  if(sz.last) return {p:sz.last[3],src:'마지막 실거래('+fmtYM(sz.last[0])+')',n:1};
+  return null;
+}
+function askPrice(c,area){ if(!c.ask||!c.ask.dealMin) return null; return {p:c.ask.dealMin,src:'네이버 매물 최저 호가(전 평형)',n:c.ask.dealCnt}; }
+function commuteMin(c){ return S.mode==='car'?c.m.car:(S.mode==='transit'?c.m.transit:Math.min(c.m.car,c.m.transit)); }
+function eduScore(c){ return Math.round((c.m.rep+c.m.acad)/2*10)/10; }
+function matchRegion(c,list){ return list.some(x=>x&&(c.dong.includes(x)||c.sgg.includes(x)||c.m.area.includes(x)||c.name.includes(x)||(c.hj&&c.hj.includes(x))||(c.sggnm&&c.sggnm.replace(/\s/g,'').includes(x.replace(/\s/g,''))))); }
+function evaluate(c){
+  const out=[]; let worst=0; const push=(l,t)=>{out.push({lvl:l,txt:t}); worst=Math.max(worst,l);};
+  const key=pickSizeKey(c); const sz=key!=null?c.sizes[key]:null;
+  let rp=refPrice(sz); if(!rp) rp=askPrice(c);
+  const area=sz?sz.area:(c.ask?parseFloat(c.ask.minSpc)*0.77:S.size);
+  // hard filters
+  if(S.hj.size && !S.hj.has(c.hjcd)) push(2,'지도에서 선택한 지역 밖');
+  if(S.include.length && !matchRegion(c,S.include)) push(2,'포함 지역 조건 밖');
+  if(S.exclude.length && matchRegion(c,S.exclude)) push(2,`제외 지역(${c.m.area})`);
+  if(S.noReg && c.reg) push(2,'규제지역(토허구역) 제외 조건');
+  if(c.built && c.built<S.builtMin) push(2,`${c.built}년 준공, 기준 ${S.builtMin}년 이후 미충족`);
+  if(c.units!=null && c.units<S.unitsMin) push(2,`${c.units}세대, 최소 ${S.unitsMin}세대 미충족`);
+  if(S.tradeOnly && !(sz&&sz.n12>0)) push(2,'최근 12개월 해당 면적 실거래 없음');
+  if(sz && Math.abs(sz.area-S.size)>10) push(1,`기준 ${S.size}㎡ 평형이 없어 ${sz.area}㎡로 판정`);
+  // budget
+  const B=S.budget*10000;
+  if(!rp) push(2,'가격 정보 없음(실거래·호가 모두 없음)');
+  else { const ratio=rp.p/B;
+    const cheaper=c.sizeKeys.map(k=>[k,refPrice(c.sizes[k])]).filter(([k,r])=>r&&r.p<=B&&k<key).sort((a,b)=>b[1].p-a[1].p)[0];
+    if(rp.p<=B) push(0,`기준가 ${fmtEok(rp.p)} ≤ 예산 ${S.budget.toFixed(1)}억 (여유 ${fmtEok(B-rp.p)}) · ${rp.src}`);
+    else if(ratio<=1.15) push(1,`기준가 ${fmtEok(rp.p)}이 예산을 ${fmtEok(rp.p-B)} 초과(+${Math.round((ratio-1)*100)}%). 저층·급매·추가현금으로 좁힐 수 있는 폭 · ${rp.src}`);
+    else if(cheaper) push(1,`${key}㎡는 ${fmtEok(rp.p)}로 초과, ${cheaper[0]}㎡(${fmtEok(cheaper[1].p)})는 예산 안. 평형을 낮추면 가능`);
+    else push(2,`기준가 ${fmtEok(rp.p)} = 예산의 ${ratio.toFixed(1)}배 · ${rp.src}`); }
+  // rooms
+  const rm=roomsOf(area,c.built); const bigger=c.sizeKeys.some(k=>k>=95);
+  if(S.rooms==='4s'){ if(rm.n>=4) push(0,`방 4개(${area}㎡)`); else if(rm.n>=3.5) push(1,`방 ${rm.txt}: 신축 84㎡ 4베이 구조 확인 필요`); else if(bigger) push(1,`이 평형은 방 ${rm.txt}. 상위 평형(95㎡+)에 방4 가능(가격 확인)`); else push(2,`방 ${rm.txt}, 방4 평형 없음`); }
+  else if(S.rooms==='4'){ if(rm.n>=4) push(0,`방 4개(${area}㎡)`); else if(rm.n>=3) push(bigger?1:0, bigger?`방 ${rm.txt}(허용). 상위 평형에 방4 있음`:`방 ${rm.txt}(허용 범위)`); else push(2,`방 ${rm.txt}, 3개 미만`); }
+  else { if(rm.n>=3) push(0,`방 ${rm.txt}`); else push(2,`방 ${rm.txt}, 3개 미만`); }
+  // commute
+  const cm=commuteMin(c), es=eduScore(c); const modeTxt=S.mode==='car'?'자가용':(S.mode==='transit'?'대중교통':'빠른 수단');
+  if(cm<=S.commute) push(0,`출근 ${cm}분(${modeTxt}) ≤ ${S.commute}분 · 자가용 ${c.m.car} / 대중교통 ${c.m.transit}분 (${c.m.tnote})`);
+  else if(cm<=S.commute+15 && S.eduOver && es>=4) push(1,`출근 ${cm}분으로 초과지만 교육환경 ${es}등급이라 검토 허용`);
+  else if(cm<=S.commute+15) push(1,`출근 ${cm}분, 한도를 ${cm-S.commute}분 초과`);
+  else push(2,`출근 ${cm}분, 한도 크게 초과`);
+  // education
+  if(es>=S.edu) push(0,`교육환경 ${es}등급 ≥ ${S.edu} · ${c.m.mid}${c.m.known?'':' (미평가 동)'}`);
+  else if(es>=S.edu-1) push(1,`교육환경 ${es}등급, 요구보다 한 단계 낮음`);
+  else push(2,`교육환경 ${es}등급, 요구 미달`);
+  if(c.reg) push(0,'규제지역: 토지거래허가 + 6개월 내 전입·2년 실거주(실거주 목적이라 결격 아님), LTV 40%');
+  if(c.approx) push(1,'지도 위치가 동 중심으로 표기됨(정확 좌표 미확인)');
+  const status=['blue','yellow','red'][worst];
+  const price=rp?rp.p:null;
+  const score=(price?(price<=B?30:Math.max(0,30-(price/B-1)*100)):0)+Math.max(0,25-Math.max(0,cm-S.commute))+es*6+(rm.n>=4?8:rm.n>=3?4:0)+(c.units>=1000?3:0)+(c.built>=2010?3:0);
+  return {status,worst,out,key,sz,rp,area,cm,es,score,rm};
+}
+let EV={};
+function evalAll(){ EV={}; C.forEach(c=>EV[c.id]=evaluate(c)); }
+
+/* ---------------- MAP (vector base map + pan/zoom) ---------------- */
+const EXT={lat0:37.14,lat1:37.37,lng0:126.94,lng1:127.21}; const MW=1000, MH=1070;
+function px(lng){return (lng-EXT.lng0)/(EXT.lng1-EXT.lng0)*MW;}
+function py(lat){return (EXT.lat1-lat)/(EXT.lat1-EXT.lat0)*MH;}
+function pathXY(pts){return pts.map((p,i)=>(i?'L':'M')+px(p[0]).toFixed(1)+' '+py(p[1]).toFixed(1)).join(' ');}
+const GUCOL={'수원시 영통구':'#7FB3D5','수원시 장안구':'#A3C9A8','수원시 권선구':'#D9B98A','수원시 팔달구':'#C9A7D6','용인시 수지구':'#F2A38B','용인시 기흥구':'#F5D57A','용인시 처인구':'#C8C8C8','화성시 동탄구':'#8FD3C9','화성시 병점구':'#B8D98A','화성시 효행구':'#D7D7B0','화성시 만세구':'#D7D7B0','오산시':'#E6B8C6','평택시':'#B5C8E8','동작구':'#BBBBBB'};
+const RAILCOL=(n)=>/신분당/.test(n)?'#D4003B':/분당|수인/.test(n)?'#FABE00':/1호선|경부선|경부 본선/.test(n)?'#0052A4':/GTX|SRT|수서|고속/.test(n)?'#9A6292':/경전철|에버라인/.test(n)?'#6FB245':'#8A8F96';
+const VB={x:0,y:0,w:MW,h:MH};
+const DONGS=MAPDATA.bounds; const DONGBB={}; const GUBB={};
+DONGS.forEach(b=>{ const xs=[],ys=[]; b.polys.forEach(pl=>pl.forEach(p=>{xs.push(p[0]);ys.push(p[1]);})); const bb=[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]; DONGBB[b.cd]=bb; const g=GUBB[b.sggnm]||(GUBB[b.sggnm]=[1e9,1e9,-1e9,-1e9]); g[0]=Math.min(g[0],bb[0]);g[1]=Math.min(g[1],bb[1]);g[2]=Math.max(g[2],bb[2]);g[3]=Math.max(g[3],bb[3]); });
+let zoomTarget=null, zoomRaf=0, dynTimer=0;
+function applyVB(){ document.getElementById('map').setAttribute('viewBox',`${VB.x} ${VB.y} ${VB.w} ${VB.h}`); }
+function scheduleDynamic(ms=90){ clearTimeout(dynTimer); dynTimer=setTimeout(()=>{drawDynamic();},ms); }
+function animateZoom(){ if(zoomRaf) return; const step=()=>{ const T=zoomTarget; if(!T){zoomRaf=0;return;} const k=0.28; VB.x+=(T.x-VB.x)*k; VB.y+=(T.y-VB.y)*k; VB.w+=(T.w-VB.w)*k; VB.h+=(T.h-VB.h)*k; if(Math.abs(T.w-VB.w)<0.15&&Math.abs(T.x-VB.x)<0.15&&Math.abs(T.y-VB.y)<0.15){ Object.assign(VB,T); zoomTarget=null; applyVB(); zoomRaf=0; scheduleDynamic(40); return; } applyVB(); zoomRaf=requestAnimationFrame(step); }; zoomRaf=requestAnimationFrame(step); }
+function setVB(){ zoomTarget=null; applyVB(); drawDynamic(); }
+function zoomTo(lat,lng,w){ const h=w*MH/MW; zoomTarget={x:px(lng)-w/2,y:py(lat)-h/2,w,h}; animateZoom(); }
+function zoomBB(bb,pad=1.25){ const x0=px(bb[0]),x1=px(bb[2]),y0=py(bb[3]),y1=py(bb[1]); const w=Math.max((x1-x0)*pad,(y1-y0)*pad*MW/MH,50); zoomTo((bb[1]+bb[3])/2,(bb[0]+bb[2])/2,w); }
+function drawMap(){
+  const svg=document.getElementById('map'); let s='';
+  s+=`<rect x="-3000" y="-3000" width="7000" height="7000" fill="var(--map-land)"/>`;
+  // 행정동 polygons
+  s+='<g id="dongs">'+DONGS.map(b=>`<path class="dong" data-cd="${b.cd}" fill="${GUCOL[b.sggnm]||'#CCCCCC'}" d="${b.polys.map(pl=>pathXY(pl)+'Z').join(' ')}"><title>${b.sggnm} ${b.nm}</title></path>`).join('')+'</g>';
+  // water (merged)
+  s+=`<path d="${MAPDATA.water.filter(w=>w.k==='a').map(w=>pathXY(w.p)+'Z').join(' ')}" fill="var(--map-water)" stroke="none"/>`;
+  s+=`<path class="rd" d="${MAPDATA.water.filter(w=>w.k==='l').map(w=>pathXY(w.p)).join(' ')}" stroke="var(--map-water)" stroke-width="2.2"/>`;
+  // roads (merged per class: casing then fill)
+  const rw={motorway:4.2,trunk:3.2,primary:2.4}; const rc={motorway:'var(--map-hwy)',trunk:'var(--map-trunk)',primary:'var(--map-road)'};
+  const byC={}; MAPDATA.roads.forEach(r=>{(byC[r.c]=byC[r.c]||[]).push(pathXY(r.p));});
+  ['primary','trunk','motorway'].forEach(c=>{ if(byC[c]) s+=`<path class="rd" d="${byC[c].join(' ')}" stroke="var(--map-road-case)" stroke-width="${rw[c]+1.6}" opacity=".9"/>`; });
+  ['primary','trunk','motorway'].forEach(c=>{ if(byC[c]) s+=`<path class="rd" d="${byC[c].join(' ')}" stroke="${rc[c]}" stroke-width="${rw[c]}"/>`; });
+  // rails merged per color
+  const byR={}; MAPDATA.rails.forEach(r=>{ const k=RAILCOL(r.n)+'|'+(r.c==='light_rail'?1.4:2)+'|'+((/고속|경부선/.test(r.n)&&!/1호선/.test(r.n))?'d':'s'); (byR[k]=byR[k]||[]).push(pathXY(r.p)); });
+  for(const k in byR){ const [col,w,d]=k.split('|'); s+=`<path class="rd" d="${byR[k].join(' ')}" stroke="${col}" stroke-width="${w}" ${d==='d'?'stroke-dasharray="6 4"':''} opacity=".9"/>`; }
+  s+='<g id="dyn"></g><g id="markers"></g>';
+  svg.innerHTML=s;
+  svg.querySelectorAll('.dong').forEach(el=>el.addEventListener('click',ev=>{ if(dragMoved) return; const b=DONGS.find(x=>x.cd===el.dataset.cd); if(VB.w/MW>0.42){ selectGu(b.sggnm); } else { toggleDong(el.dataset.cd); showRegion('dong',el.dataset.cd); } }));
+  let drag=null; var dragMoved=false;
+  svg.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,vx:VB.x,vy:VB.y}; dragMoved=false; hideTip(); svg.classList.add('drag'); svg.setPointerCapture(e.pointerId);});
+  svg.addEventListener('pointermove',e=>{ if(!drag) return; const r=svg.getBoundingClientRect(); const k=VB.w/r.width; const dx=e.clientX-drag.x, dy=e.clientY-drag.y; if(Math.abs(dx)+Math.abs(dy)>3) dragMoved=true; VB.x=drag.vx-dx*k; VB.y=drag.vy-dy*k; zoomTarget=null; applyVB(); });
+  const end=()=>{ if(drag){drag=null; svg.classList.remove('drag'); drawDynamic();} };
+  svg.addEventListener('pointerup',end); svg.addEventListener('pointercancel',end);
+  svg.addEventListener('dblclick',e=>{ const r=svg.getBoundingClientRect(); const mx=VB.x+(e.clientX-r.left)/r.width*VB.w, my=VB.y+(e.clientY-r.top)/r.height*VB.h; const w=Math.max(40,VB.w*0.6),h=w*MH/MW; zoomTarget={x:mx-(mx-VB.x)*w/VB.w,y:my-(my-VB.y)*h/VB.h,w,h}; animateZoom(); });
+  svg.addEventListener('wheel',e=>{ e.preventDefault(); const r=svg.getBoundingClientRect(); const T=zoomTarget||{...VB}; const mx=T.x+(e.clientX-r.left)/r.width*T.w, my=T.y+(e.clientY-r.top)/r.height*T.h; const dy=e.deltaMode===1?e.deltaY*16:e.deltaY; const f=Math.exp(Math.max(-80,Math.min(80,dy))*0.0022); const nw=Math.min(1600,Math.max(40,T.w*f)); const nh=nw*MH/MW; zoomTarget={x:mx-(mx-T.x)*nw/T.w,y:my-(my-T.y)*nh/T.h,w:nw,h:nh}; animateZoom(); },{passive:false});
+  setVB();
+}
+function inView(X,Y,m=30){ return !(X<VB.x-m||X>VB.x+VB.w+m||Y<VB.y-m||Y>VB.y+VB.h+m); }
+function drawDynamic(){
+  const scale=VB.w/MW; const g=document.getElementById('dyn'); let s='';
+  // 구 labels (zoomed out) / 동 labels (zoomed in)
+  if(scale>0.42){ for(const k in GUBB){ const bb=GUBB[k]; const X=px((bb[0]+bb[2])/2), Y=py((bb[1]+bb[3])/2); if(!inView(X,Y)) continue; s+=`<text class="gulbl gubtn" data-gu="${k}" x="${X}" y="${Y}" text-anchor="middle" font-size="${(15*Math.min(1.3,scale)).toFixed(1)}">${k.replace('수원시 ','').replace('용인시 ','').replace('화성시 ','')}</text>`; } }
+  else { DONGS.forEach(b=>{ const bb=DONGBB[b.cd]; const X=px((bb[0]+bb[2])/2), Y=py((bb[1]+bb[3])/2); if(!inView(X,Y)) return; s+=`<text class="dlbl" x="${X}" y="${Y}" text-anchor="middle" font-size="${(11*Math.max(0.45,scale)*1.6).toFixed(1)}">${b.nm}</text>`; }); }
+  // road names (motorway/trunk) when zoomed in
+  if(scale<0.7){ const seen=new Set(); MAPDATA.roads.filter(r=>r.n&&(r.c==='motorway'||(r.c==='trunk'&&scale<0.45)||(r.c==='primary'&&scale<0.25))&&r.p.length>=2).forEach(r=>{ const mid=r.p[Math.floor(r.p.length/2)]; const X=px(mid[0]),Y=py(mid[1]); if(!inView(X,Y,-10)) return; if(/터널|교$|IC|JC|램프|분기점|나들목|진출|진입|연결/.test(r.n)) return; const key=r.n+'|'+Math.round(X/(420*scale))+'|'+Math.round(Y/(420*scale)); if(seen.has(key)||seen.size>14) return; seen.add(key); s+=`<text class="rlbl" x="${X}" y="${Y-3*scale}" text-anchor="middle" font-size="${(9*Math.max(0.5,scale)*1.5).toFixed(1)}">${r.n}</text>`; }); }
+  // stations: always visible
+  { const k=Math.max(0.45,Math.min(1.2,scale)); MAPDATA.stations.forEach(st=>{ const X=px(st.x), Y=py(st.y); if(!inView(X,Y)) return; const r=(4.6*k).toFixed(2); s+=`<g class="stn"><circle cx="${X}" cy="${Y}" r="${r}" fill="var(--card)" stroke="var(--ink)" stroke-width="${(2*k).toFixed(2)}"/>${scale<0.9?`<text x="${X+ +r+3}" y="${Y+4*k}" font-size="${(10*k*1.35).toFixed(1)}" font-weight="700">${st.n}</text>`:''}</g>`; }); }
+  // 직장
+  const WX=px(WORK.lng), WY=py(WORK.lat); const ws=Math.max(0.35,Math.min(1,scale));
+  s+=`<g><rect x="${WX-9*ws}" y="${WY-9*ws}" width="${18*ws}" height="${18*ws}" rx="3" fill="var(--ink)"/><text x="${WX}" y="${WY+4*ws}" text-anchor="middle" font-size="${(10*ws).toFixed(1)}" style="fill:var(--card);font-weight:700">직</text><text class="dlbl" x="${WX-12*ws}" y="${WY-13*ws}" text-anchor="end" font-size="${(11*ws).toFixed(1)}">직장 · 광교역 앞</text></g>`;
+  g.innerHTML=s;
+  g.querySelectorAll('.gubtn').forEach(el=>el.addEventListener('click',ev=>{ev.stopPropagation(); selectGu(el.dataset.gu);}));
+  document.querySelectorAll('.dong').forEach(el=>{ el.classList.toggle('on',S.hj.has(el.dataset.cd)); el.classList.toggle('off',S.hj.size>0&&!S.hj.has(el.dataset.cd)); });
+  drawMarkers();
+}
+function drawMarkers(){
+  const g=document.getElementById('markers'); const scale=VB.w/MW; const fs=(11*Math.max(0.45,scale)*1.4).toFixed(1);
+  const order=[...C].sort((a,b)=>EV[b.id].worst-EV[a.id].worst);
+  const showLbl = scale<0.3;
+  let s='';
+  order.forEach(c=>{const e=EV[c.id]; const vis=S.filter==='all'||(S.filter==='blue'&&e.status==='blue')||(S.filter==='by'&&e.status!=='red');
+    if(!vis && scale>0.5) return;
+    const X=px(c.lng), Y=py(c.lat); if(!inView(X,Y,20)) return;
+    const col=`var(--${e.status})`; const base=e.status==='blue'?7:(e.status==='yellow'?5.5:(scale>0.6?2.6:4)); const r=(base*Math.max(0.35,Math.min(1,scale))).toFixed(2);
+    const op=(e.status==='red'&&scale>0.6&&S.selected!==c.id)?' opacity=".45"':'';
+    const lbl=(showLbl && (e.status!=='red'||S.selected===c.id))||S.selected===c.id;
+    s+=`<g class="mk ${S.selected===c.id?'sel':''} ${vis?'':'dim'}" data-id="${c.id}"><circle cx="${X}" cy="${Y}" r="${r}" fill="${col}"${op} ${c.approx?'stroke-dasharray="2 1.5"':''}/>${lbl?`<text x="${X+ +r+2}" y="${Y+3}" font-size="${fs}">${c.name}</text>`:''}</g>`;});
+  g.innerHTML=s;
+  g.querySelectorAll('.mk').forEach(el=>{ el.addEventListener('click',ev=>{ev.stopPropagation(); select(el.dataset.id);}); el.addEventListener('pointerenter',ev=>showTip(el.dataset.id,ev)); el.addEventListener('pointermove',ev=>moveTip(ev)); el.addEventListener('pointerleave',hideTip); });
+}
+/* ---------------- 툴팁 · 특징 ---------------- */
+function traits(c,e){
+  const t=[];
+  if(c.units) t.push(`${c.units.toLocaleString()}세대 ${c.units>=1500?'초대형 단지':c.units>=1000?'대단지':c.units>=500?'중규모 단지':'소규모 단지'}`);
+  if(c.built) t.push(`${c.built}년 준공 · ${2026-c.built}년차${c.built>=2018?' 신축':c.built>=2010?' 준신축':c.built<=2000?' 구축':''}`);
+  if(c.st){ const m=Math.round(c.st[1]*1000); t.push(m<=800?`${c.st[0]} ${m}m 역세권(도보 ${Math.max(1,Math.round(m/70))}분)`:m<=1500?`${c.st[0]} ${(m/1000).toFixed(1)}km`:`가까운 역 ${(m/1000).toFixed(1)}km(역 원거리)`); }
+  if(e.sz){ t.push(`${e.sz.area}㎡ 방 ${e.rm.txt}`); if(e.sz.n12) t.push(`12개월 거래 ${e.sz.n12}건${e.sz.jmed12&&e.rp?` · 전세가율 ${Math.round(e.sz.jmed12/e.rp.p*100)}%`:''}`); }
+  t.push(`출근 자가용 ${c.m.car}분 · 대중교통 ${c.m.transit}분`);
+  t.push(`교육 ${e.es}등급${c.m.acad>=4?' · 학원가 접근 좋음':''}${c.m.known?'':' (미평가 동)'}`);
+  t.push(c.reg?'규제지역(토허구역)':'비규제지역');
+  if(c.ask&&c.ask.dealCnt) t.push(`네이버 매물 ${c.ask.dealCnt}건`);
+  if(c.rh) t.push('연립다세대(현 거주)');
+  return t;
+}
+function showTip(id,ev){ const c=C.find(x=>x.id===id); if(!c) return; const e=EV[c.id]; const tip=document.getElementById('tip'); const lab={blue:'적합',yellow:'개선하면 가능',red:'부적합'}[e.status];
+  tip.innerHTML=`<b>${c.name}</b> <span class="badge ${e.status}">${lab}</span><div class="small">${c.sggnm||c.sgg} ${c.hj||c.dong}${c.hj&&c.hj!==c.dong?` (법정동 ${c.dong})`:''}</div><div style="margin-top:4px"><b class="num">${e.rp?fmtEok(e.rp.p):'가격 정보 없음'}</b> <span class="small">${e.rp?e.rp.src:''}</span></div><div class="tr">${traits(c,e).map(x=>`<span>· ${x}</span>`).join('')}</div>`;
+  tip.hidden=false; moveTip(ev); }
+function moveTip(ev){ const tip=document.getElementById('tip'); if(tip.hidden) return; const box=document.getElementById('mapbox').getBoundingClientRect(); let x=ev.clientX-box.left+14, y=ev.clientY-box.top+14; if(x+300>box.width) x=ev.clientX-box.left-300; if(y+tip.offsetHeight+10>box.height) y=ev.clientY-box.top-tip.offsetHeight-10; tip.style.left=x+'px'; tip.style.top=Math.max(4,y)+'px'; }
+function hideTip(){ document.getElementById('tip').hidden=true; }
+/* ---------------- 구·동 요약 ---------------- */
+function selectGu(gu){ const cds=DONGS.filter(b=>b.sggnm===gu).map(b=>b.cd); S.hj=new Set(cds); S.listLimit=60; S.selected=null; S.region={kind:'gu',key:gu}; refresh(); drawDynamic(); const bb=GUBB[gu]; if(bb) zoomBB(bb,1.15); renderRegionCard(); keepMapInView(); }
+function showRegion(kind,key){ S.selected=null; S.region={kind,key}; renderDetail(); renderRegionCard(); keepMapInView(); }
+function keepMapInView(){ const mb=document.getElementById('mapbox'); const r=mb.getBoundingClientRect(); if(r.top<0||r.top>window.innerHeight*0.5) mb.scrollIntoView({behavior:'smooth',block:'start'}); }
+function renderRegionCard(){
+  const card=document.getElementById('regionCard'); const R=S.region; if(!R){ card.hidden=true; return; }
+  const list = R.kind==='gu' ? C.filter(c=>c.sggnm===R.key) : C.filter(c=>c.hjcd===R.key);
+  const b = R.kind==='dong' ? DONGS.find(x=>x.cd===R.key) : null;
+  const title = R.kind==='gu' ? R.key : `${b?b.sggnm+' '+b.nm:''}`;
+  if(!list.length){ card.innerHTML=`<button class="x" id="rcX" aria-label="닫기">×</button><h3>${title}</h3><div class="small">수집된 단지 없음</div>`; card.hidden=false; document.getElementById('rcX').addEventListener('click',clearRegion); return; }
+  const st=regionStats(list); const B=S.budget*10000; const pct=v=>Math.round(v/st.n*100);
+  card.innerHTML=`<button class="x" id="rcX" aria-label="닫기">×</button><h3>${title} <span class="small">${R.kind==='gu'?'구':'동'} · ${st.n}개 단지</span></h3>
+   <div class="bars"><span style="width:${pct(st.blue)}%;background:var(--blue)"></span><span style="width:${pct(st.yellow)}%;background:var(--yellow)"></span><span style="width:${pct(st.red)}%;background:var(--red)"></span></div>
+   <div class="small">적합 <b style="color:var(--blue)">${st.blue}</b> · 개선 <b style="color:var(--yellow)">${st.yellow}</b> · 부적합 <b style="color:var(--red)">${st.red}</b></div>
+   <dl class="kv num"><dt>84㎡ 중위</dt><dd><b>${st.med84?fmtEok(st.med84):'-'}</b> <span class="small">${st.med84?'예산의 '+Math.round(st.med84/B*100)+'%':''}</span></dd><dt>범위</dt><dd>${st.min84?fmtEok(st.min84)+'~'+fmtEok(st.max84):'-'}</dd><dt>12M 거래</dt><dd>${st.trades12.toLocaleString()}건</dd><dt>출근</dt><dd>차 ${st.car}분 · 대중 ${st.transit}분</dd><dt>교육</dt><dd>${st.edu}등급 · ${st.reg?'규제':'비규제'}</dd></dl>
+   <div class="row"><button class="btn primary" id="rcMore">자세한 요약 보기</button>${R.kind==='dong'&&b?`<button class="btn" id="rcGu">${b.sggnm.replace('수원시 ','').replace('용인시 ','').replace('화성시 ','')} 전체</button>`:''}<button class="btn" id="rcClear">해제</button></div>`;
+  card.hidden=false;
+  document.getElementById('rcX').addEventListener('click',clearRegion);
+  document.getElementById('rcClear').addEventListener('click',clearRegion);
+  document.getElementById('rcMore').addEventListener('click',()=>{ renderDetail(); document.getElementById('detail').scrollIntoView({behavior:'smooth',block:'start'}); });
+  const g=document.getElementById('rcGu'); if(g) g.addEventListener('click',()=>selectGu(b.sggnm));
+}
+function clearRegion(){ S.hj.clear(); S.region=null; refresh(); drawDynamic(); renderRegionCard(); zoomTarget={x:0,y:0,w:MW,h:MH}; animateZoom(); }
+function med(arr){ if(!arr.length) return null; const a=[...arr].sort((x,y)=>x-y); return a[Math.floor(a.length/2)]; }
+function regionStats(list){
+  const st={n:list.length,blue:0,yellow:0,red:0,units:0,trades12:0,new:0,reg:0}; const p84=[],pAll=[],jr=[],cars=[],trs=[],edus=[],builts=[];
+  list.forEach(c=>{ const e=EV[c.id]; st[e.status]++; st.units+=c.units||0; if(c.reg) st.reg++; if(c.built){builts.push(c.built); if(c.built>=2015) st.new++;}
+    cars.push(c.m.car); trs.push(c.m.transit); edus.push(eduScore(c));
+    c.sizeKeys.forEach(k=>{ st.trades12+=c.sizes[k].n12||0; });
+    const k84=c.sizeKeys.find(k=>Math.abs(k-84)<=6); if(k84!=null){ const z=c.sizes[k84]; const r=refPrice(z); if(r&&z.n12){ p84.push(r.p); if(z.jmed12) jr.push(z.jmed12/r.p); } }
+    if(e.rp) pAll.push(e.rp.p); });
+  st.med84=med(p84); st.min84=p84.length?Math.min(...p84):null; st.max84=p84.length?Math.max(...p84):null; st.n84=p84.length;
+  st.medSel=med(pAll); st.jr=med(jr); st.car=cars.length?Math.round(cars.reduce((a,b)=>a+b,0)/cars.length):null; st.transit=trs.length?Math.round(trs.reduce((a,b)=>a+b,0)/trs.length):null;
+  st.edu=edus.length?Math.round(edus.reduce((a,b)=>a+b,0)/edus.length*10)/10:null; st.builtMed=med(builts);
+  return st;
+}
+function renderRegion(){
+  const d=document.getElementById('detail'); const R=S.region; if(!R) return;
+  const list = R.kind==='gu' ? C.filter(c=>c.sggnm===R.key) : C.filter(c=>c.hjcd===R.key);
+  const b = R.kind==='dong' ? DONGS.find(x=>x.cd===R.key) : null;
+  const title = R.kind==='gu' ? R.key : `${b?b.sggnm+' ':''}${b?b.nm:''}`;
+  if(!list.length){ d.innerHTML=`<h2>${title}</h2><p class="small">이 지역에는 수집된 단지가 없습니다(세대수 100 미만·거래 없음 단지는 제외됨).</p>`; return; }
+  const st=regionStats(list); const B=S.budget*10000;
+  const pct=(v)=>Math.round(v/st.n*100);
+  const areas=[...new Set(list.map(c=>c.m.area))]; const devs=[]; areas.forEach(a=>devFor(a).forEach(x=>{ if(!devs.some(y=>y.t===x.t)) devs.push(x); }));
+  const schools=[...new Set(list.filter(c=>c.m.known).map(c=>c.m.mid))];
+  const top=[...list].sort((a,b)=>EV[a.id].worst-EV[b.id].worst||EV[b.id].score-EV[a.id].score).slice(0,10);
+  const row=(c)=>{const e=EV[c.id]; return `<tr data-id="${c.id}"><td><span class="st st-${e.status}" style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px"></span>${c.name}<div class="small">${c.hj||c.dong} · ${c.built||'?'}년 · ${c.units?c.units.toLocaleString()+'세대':''}</div></td><td class="num r">${e.rp?fmtEok(e.rp.p):'-'}<div class="small">${e.sz?e.sz.area+'㎡':''}</div></td><td class="num r">${c.m.car}/${c.m.transit}</td><td class="num r">${e.es}</td></tr>`;};
+  let dongTbl='';
+  if(R.kind==='gu'){ const by={}; list.forEach(c=>{ (by[c.hjcd]=by[c.hjcd]||{nm:c.hj,list:[]}).list.push(c); });
+    const rows=Object.entries(by).map(([cd,o])=>{const s2=regionStats(o.list); return {cd,nm:o.nm,s:s2};}).sort((a,b)=>b.s.blue-a.s.blue||(a.s.med84||9e9)-(b.s.med84||9e9));
+    dongTbl=`<h3 style="margin-top:12px">동별 분포 <span class="small">클릭하면 그 동으로 좁혀집니다</span></h3><div class="tbl"><table class="num dongtbl"><tr><th>행정동</th><th class="r">단지</th><th class="r">파랑·노랑·빨강</th><th class="r">84㎡ 중위</th><th class="r">12M 거래</th><th class="r">출근(차)</th><th class="r">교육</th></tr>${rows.map(r=>`<tr data-cd="${r.cd}" style="cursor:pointer"><td>${r.nm}</td><td class="r">${r.s.n}</td><td class="r"><b style="color:var(--blue)">${r.s.blue}</b>·<b style="color:var(--yellow)">${r.s.yellow}</b>·<b style="color:var(--red)">${r.s.red}</b></td><td class="r">${r.s.med84?fmtEok(r.s.med84):'-'}</td><td class="r">${r.s.trades12}</td><td class="r">${r.s.car}분</td><td class="r">${r.s.edu}</td></tr>`).join('')}</table></div>`; }
+  const verdict = st.med84? (st.med84<=B?`84㎡ 중위가 예산 안입니다. 이 지역은 <b>예산으로 접근 가능한 곳</b>입니다.`:st.med84<=B*1.15?`84㎡ 중위가 예산을 ${Math.round((st.med84/B-1)*100)}% 넘습니다. 저층·구축·급매를 노리면 닿는 구간입니다.`:`84㎡ 중위가 예산의 ${(st.med84/B).toFixed(1)}배입니다. 소형 평형이나 추가 현금 없이는 어렵습니다.`):'84㎡ 최근 거래가 없어 소형·대형 위주 지역입니다.';
+  d.innerHTML=`<div class="rsum">
+  <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline"><h2>${title} <span class="small">${R.kind==='gu'?'구 요약':'동 요약'}</span></h2><span class="small">${st.n}개 단지 · ${st.units.toLocaleString()}세대 · ${st.reg?'규제지역(토허구역)':'비규제지역'}${R.kind==='dong'&&b?` · <a href="#" id="backGu">${b.sggnm} 요약으로</a>`:''}</span></div>
+  <div class="bars"><span style="width:${pct(st.blue)}%;background:var(--blue)"></span><span style="width:${pct(st.yellow)}%;background:var(--yellow)"></span><span style="width:${pct(st.red)}%;background:var(--red)"></span></div>
+  <div class="small">현재 조건 기준 적합 <b style="color:var(--blue)">${st.blue}</b> · 개선하면 가능 <b style="color:var(--yellow)">${st.yellow}</b> · 부적합 <b style="color:var(--red)">${st.red}</b></div>
+  <div class="callout ${st.med84&&st.med84<=B?'good':st.med84&&st.med84<=B*1.15?'warn':'bad'}" style="margin-top:8px">${verdict}</div>
+  <div class="two">
+   <div>
+    <h3>시세 · 거래 <span class="small">국토부 실거래</span></h3>
+    <dl class="kv num">
+     <dt>84㎡ 기준가 중위</dt><dd><b>${st.med84?fmtEok(st.med84):'-'}</b> <span class="small">${st.n84}개 단지 · 예산 ${S.budget.toFixed(1)}억 대비 ${st.med84?Math.round(st.med84/B*100)+'%':'-'}</span></dd>
+     <dt>84㎡ 범위</dt><dd>${st.min84?fmtEok(st.min84)+' ~ '+fmtEok(st.max84):'-'}</dd>
+     <dt>선택 평형(${S.size}㎡) 중위</dt><dd>${st.medSel?fmtEok(st.medSel):'-'}</dd>
+     <dt>전세가율 중위</dt><dd>${st.jr?Math.round(st.jr*100)+'%':'-'}</dd>
+     <dt>12개월 매매 거래</dt><dd>${st.trades12.toLocaleString()}건 <span class="small">(단지당 ${(st.trades12/st.n).toFixed(1)}건)</span></dd>
+     <dt>준공 중위 · 신축 비율</dt><dd>${st.builtMed||'-'}년 · 2015년 이후 ${pct(st.new)}%</dd>
+    </dl>
+    <h3>출근 · 교육 <span class="small">동 단위 분석가 추정</span></h3>
+    <dl class="kv">
+     <dt>광교역 출근 평균</dt><dd>자가용 ${st.car}분 · 대중교통 ${st.transit}분</dd>
+     <dt>교육환경 평균</dt><dd>${st.edu}등급 (1~5)</dd>
+     <dt>배정 후보 중학교</dt><dd>${schools.length?schools.join(' / '):'평가표에 없는 동(학구도 확인)'}<div class="small">배정 단정 금지. 2029·2032학년도 규정 확인.</div></dd>
+    </dl>
+   </div>
+   <div>
+    <h3>이 지역 상위 단지 <span class="small">현재 조건 점수순 · 클릭하면 상세</span></h3>
+    <div class="tbl"><table class="top"><tr><th>단지</th><th class="r">기준가</th><th class="r">출근(차/대중)</th><th class="r">교육</th></tr>${top.map(row).join('')}</table></div>
+   </div>
+  </div>
+  ${dongTbl}
+  <h3 style="margin-top:12px">호재 · 리스크 <span class="small">${areas.join(' · ')}</span></h3>
+  ${devHtml(devs)}
+  </div>`;
+  d.querySelectorAll('.top tr[data-id]').forEach(tr=>tr.addEventListener('click',()=>select(tr.dataset.id)));
+  d.querySelectorAll('.dongtbl tr[data-cd]').forEach(tr=>tr.addEventListener('click',()=>{ S.hj=new Set([tr.dataset.cd]); S.listLimit=60; S.region={kind:'dong',key:tr.dataset.cd}; S.selected=null; refresh(); drawDynamic(); renderRegionCard(); const bb=DONGBB[tr.dataset.cd]; if(bb) zoomBB(bb,1.3); keepMapInView(); }));
+  const bk=d.querySelector('#backGu'); if(bk) bk.addEventListener('click',ev=>{ev.preventDefault(); selectGu(b.sggnm);});
+}
+/* ---------------- 지역 트리 (구 → 행정동) ---------------- */
+function toggleDong(cd){ if(S.hj.has(cd)) S.hj.delete(cd); else S.hj.add(cd); S.listLimit=60; if(!S.hj.has(cd)&&S.region&&S.region.key===cd) S.region=null; afterRegionChange(); }
+function afterRegionChange(){ refresh(); drawDynamic(); renderRegionCard(); if(S.hj.size){ let bb=[1e9,1e9,-1e9,-1e9]; S.hj.forEach(cd=>{const b=DONGBB[cd]; if(!b) return; bb=[Math.min(bb[0],b[0]),Math.min(bb[1],b[1]),Math.max(bb[2],b[2]),Math.max(bb[3],b[3])];}); if(bb[0]<1e8) zoomBB(bb,1.3); } }
+function renderTree(){
+  const save=S.hj; S.hj=new Set(); const base={}; C.forEach(c=>{ base[c.id]=evaluate(c).status; }); S.hj=save;
+  const byGu={}; C.forEach(c=>{ if(!c.hjcd) return; const g=byGu[c.sggnm]||(byGu[c.sggnm]={n:0,b:0,y:0,r:0,dongs:{}}); g.n++; g[base[c.id][0]]++; const d=g.dongs[c.hjcd]||(g.dongs[c.hjcd]={nm:c.hj,n:0,b:0,y:0,r:0}); d.n++; d[base[c.id][0]]++; });
+  const gus=Object.entries(byGu).sort((a,b)=>b[1].b-a[1].b||b[1].n-a[1].n);
+  const open=window._treeOpen||(window._treeOpen=new Set(gus.slice(0,2).map(g=>g[0])));
+  const cnt=(o)=>`<span class="cnt"><b style="color:var(--blue)">${o.b}</b>·<b style="color:var(--yellow)">${o.y}</b>·<b style="color:var(--red)">${o.r}</b> / ${o.n}</span>`;
+  document.getElementById('tree').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h3>지역 선택 <span class="small">구 이름 클릭 = 구 요약 · ▸ = 펼치기 · 동 클릭 = 그 동만 보기</span></h3><button class="btn" style="padding:3px 9px;font-size:12px" id="treeClear" ${S.hj.size?'':'disabled'}>전체 해제</button></div>
+  ${gus.map(([gu,g])=>{ const allOn=Object.keys(g.dongs).every(cd=>S.hj.has(cd)); return `<div class="gu" data-gu="${gu}"><span class="tg">${open.has(gu)?'▾':'▸'}</span><span>${gu}</span><button class="pick" data-gu="${gu}" aria-pressed="${allOn}" title="이 구 전체 선택/해제">구 전체</button>${cnt(g)}</div>
+   ${open.has(gu)?`<div class="dongs">${Object.entries(g.dongs).sort((a,b)=>b[1].b-a[1].b||b[1].n-a[1].n).map(([cd,d])=>`<button data-cd="${cd}" aria-pressed="${S.hj.has(cd)}" title="파랑 ${d.b} · 노랑 ${d.y} · 빨강 ${d.r}">${d.nm} <span class="small">${d.n}</span>${d.b?`<i class="st-blue"></i>`:''}${d.y?`<i class="st-yellow"></i>`:''}</button>`).join('')}</div>`:''}`; }).join('')}`;
+  document.getElementById('treeClear').addEventListener('click',clearRegion);
+  document.querySelectorAll('#tree .gu').forEach(el=>el.addEventListener('click',ev=>{ if(ev.target.classList.contains('pick')) return; const gu=el.dataset.gu; if(ev.target.classList.contains('tg')){ if(open.has(gu)) open.delete(gu); else open.add(gu); renderTree(); return; } open.add(gu); showRegion('gu',gu); renderTree(); }));
+  document.querySelectorAll('#tree .pick').forEach(el=>el.addEventListener('click',ev=>{ ev.stopPropagation(); const gu=el.dataset.gu; const cds=Object.keys(byGu[gu].dongs); const allOn=cds.every(cd=>S.hj.has(cd)); if(allOn){ cds.forEach(cd=>S.hj.delete(cd)); S.region=null; S.listLimit=60; afterRegionChange(); } else selectGu(gu); }));
+  document.querySelectorAll('#tree .dongs button').forEach(el=>el.addEventListener('click',()=>{ toggleDong(el.dataset.cd); if(S.hj.has(el.dataset.cd)) showRegion('dong',el.dataset.cd); }));
+}
+
+/* ---------------- LIST / DETAIL ---------------- */
+function sorted(){ return [...C].sort((a,b)=>EV[a.id].worst-EV[b.id].worst||EV[b.id].score-EV[a.id].score); }
+function renderList(){
+  const list=document.getElementById('list'); const arr=sorted();
+  const c={blue:0,yellow:0,red:0}; arr.forEach(h=>c[EV[h.id].status]++);
+  document.getElementById('cnt').innerHTML=`<b style="color:var(--blue)">${c.blue}</b> · <b style="color:var(--yellow)">${c.yellow}</b> · <b style="color:var(--red)">${c.red}</b> / ${C.length}`;
+  const vis=arr.filter(h=>S.filter==='all'||(S.filter==='blue'&&EV[h.id].status==='blue')||(S.filter==='by'&&EV[h.id].status!=='red'));
+  list.innerHTML=vis.slice(0,S.listLimit).map(h=>{const e=EV[h.id];
+    return `<div class="item ${S.selected===h.id?'sel':''}" data-id="${h.id}" tabindex="0" role="button"><span class="st st-${e.status}"></span><div><div class="n">${h.name}</div><div class="m">${(h.sggnm||h.sgg).replace('수원시 ','').replace('용인시 ','').replace('화성시 ','')} ${h.hj||h.dong} · ${h.built||'?'}년 · ${h.units?h.units.toLocaleString()+'세대':'세대수 미확인'} · 출근 ${e.cm}분 · 교육 ${e.es}</div></div><div class="p num">${e.rp?fmtEok(e.rp.p):'-'}<small>${e.sz?e.sz.area+'㎡ 방'+e.rm.txt:''}${e.sz&&e.sz.n12?` · 12M ${e.sz.n12}건`:''}</small></div></div>`;}).join('');
+  document.getElementById('moreBtn').hidden = vis.length<=S.listLimit;
+  list.querySelectorAll('.item').forEach(el=>{el.addEventListener('click',()=>select(el.dataset.id));el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();select(el.dataset.id);}});});
+}
+function select(id){ S.selected=id; S.region=null; document.getElementById('regionCard').hidden=true; renderList(); drawMarkers(); renderDetail(); document.getElementById('detail').scrollIntoView({behavior:'smooth',block:'nearest'}); }
+function chartSVG(series){
+  if(!series||series.length<2) return '<p class="small">월별 추이를 그릴 거래가 부족합니다.</p>';
+  const W=520,H=140,L=48,R=10,T=10,Bm=24; const ys=series.map(s=>s[1]); const mn=Math.min(...ys)*0.97, mx=Math.max(...ys)*1.03;
+  const X=i=>L+(W-L-R)*i/(series.length-1), Y=v=>T+(H-T-Bm)*(1-(v-mn)/(mx-mn||1));
+  const pts=series.map((s,i)=>`${X(i).toFixed(1)},${Y(s[1]).toFixed(1)}`).join(' ');
+  const ticks=[mn,(mn+mx)/2,mx].map(v=>`<text x="${L-4}" y="${Y(v)+3}" text-anchor="end">${(v/10000).toFixed(1)}억</text><line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line2)"/>`).join('');
+  const xl=series.map((s,i)=>i%Math.ceil(series.length/6)===0||i===series.length-1?`<text x="${X(i)}" y="${H-6}" text-anchor="middle">${s[0].slice(2,4)}.${s[0].slice(4)}</text>`:'').join('');
+  const dots=series.map((s,i)=>`<circle cx="${X(i)}" cy="${Y(s[1])}" r="${i===series.length-1?3.5:2}" fill="var(--accent)"><title>${fmtYM(s[0])} 중위 ${fmtEok(s[1])} (${s[2]}건)</title></circle>`).join('');
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}">${ticks}<polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2"/>${dots}${xl}</svg>`;
+}
+function renderDetail(){
+  const d=document.getElementById('detail'); if(!S.selected&&S.region){ renderRegion(); return; } const c=C.find(x=>x.id===S.selected); if(!c) return;
+  const e=EV[c.id]; const lab={blue:'적합',yellow:'개선하면 가능',red:'부적합'}[e.status];
+  const sizes=c.sizeKeys.map(k=>{const z=c.sizes[k]; const r=refPrice(z); return `<button aria-pressed="${k===e.key}" data-sz="${k}">${z.area}㎡ · ${z.py}평형 · ${r?fmtEok(r.p):'거래없음'}${z.n12?` <span class="small">12M ${z.n12}건</span>`:''}</button>`;}).join('');
+  const B=S.budget*10000; const pct=e.rp?Math.min(100,e.rp.p/B*50):0;
+  const L=computeBudget(); const priceEok=e.rp?e.rp.p/10000:0;
+  const loanNeeded=Math.max(0,priceEok+acqTax(priceEok,false)+brokerFee(priceEok)-L.cash); const pmt=principalToPmt(loanNeeded*10000,K.rate,K.term);
+  const ltv=Math.min(priceEok*(c.reg?0.4:0.7), priceEok<=15?6:(priceEok<=25?4:2));
+  const sz=e.sz;
+  const tradesTbl=sz&&sz.trades.length?`<div class="trades"><table class="num"><tr><th>계약</th><th class="r">층</th><th class="r">금액</th></tr>${sz.trades.map(t=>`<tr><td>${fmtYM(t[0])}.${String(t[1]).padStart(2,'0')}</td><td class="r">${t[2]}</td><td class="r">${fmtEok(t[3])}</td></tr>`).join('')}</table></div>`:'<p class="small">이 면적의 최근 24개월 매매 실거래가 없습니다.</p>';
+  const rentsTbl=sz&&sz.rents.length?`<div class="trades" style="max-height:140px"><table class="num"><tr><th>계약</th><th class="r">층</th><th class="r">전세보증금</th></tr>${sz.rents.map(t=>`<tr><td>${fmtYM(t[0])}.${String(t[1]).padStart(2,'0')}</td><td class="r">${t[2]}</td><td class="r">${fmtEok(t[3])}</td></tr>`).join('')}</table></div>`:'<p class="small">최근 12개월 전세 거래 없음.</p>';
+  const q=encodeURIComponent(c.name);
+  const askHtml=c.ask?`<dt>네이버 매물 호가</dt><dd>매매 ${c.ask.dealCnt}건 ${c.ask.dealMin?fmtEok(c.ask.dealMin)+' ~ '+fmtEok(c.ask.dealMax):''} · 전세 ${c.ask.leaseCnt}건 ${c.ask.leaseMin?fmtEok(c.ask.leaseMin)+' ~ '+fmtEok(c.ask.leaseMax):''} <span class="small">(전 평형 합산, 2026-09-25)</span></dd>`:'<dt>네이버 매물 호가</dt><dd class="small">수집 시점에 네이버 차단으로 호가 미수집. 링크에서 확인.</dd>';
+  d.innerHTML=`<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline"><h2>${c.name} <span class="badge ${e.status}">${lab}</span></h2><span class="small">${c.sggnm||c.sgg} ${c.hj||c.dong}${c.hj&&c.hj!==c.dong?' (법정동 '+c.dong+')':''}${c.road&&c.road!=='-'?' · '+c.road:''} · ${c.built||'?'}년 · ${c.units?c.units.toLocaleString()+'세대':'세대수 미확인'}${c.st?` · 가까운 역 ${c.st[0]} ${Math.round(c.st[1]*1000)}m`:''}${c.approx?' · <b>위치 근사</b>':''}</span></div>
+  <div class="tr small" style="margin:2px 0 6px">${traits(c,e).map(x=>`<span style="display:inline-block;margin-right:8px">· ${x}</span>`).join('')}</div>
+  <div class="sizes">${sizes||'<span class="small">실거래 면적 정보 없음</span>'}</div>
+  <div class="two">
+   <div>
+    <h3>판정 근거</h3>
+    <div class="crit">${e.out.map(o=>`<div><i class="st-${['blue','yellow','red'][o.lvl]}"></i><span>${o.txt}</span></div>`).join('')}</div>
+    <h3>시세 · 자금 <span class="small">${sz?sz.area+'㎡ 기준':''}</span></h3>
+    <dl class="kv num">
+     <dt>기준가</dt><dd><b>${e.rp?fmtEok(e.rp.p):'-'}</b> <span class="small">${e.rp?e.rp.src+(e.rp.n?` · ${e.rp.n}건`:''):''}</span></dd>
+     <dt>실거래 통계</dt><dd>${sz?`3개월 중위 ${fmtEok(sz.med3)} · 12개월 중위 ${fmtEok(sz.med12)} (${sz.n12}건) · 24개월 최고 ${fmtEok(sz.max24)}`:'-'}</dd>
+     <dt>전세</dt><dd>${sz&&sz.jmed12?`12개월 전세 중위 ${fmtEok(sz.jmed12)} (${sz.jn12}건) · 전세가율 ${e.rp?Math.round(sz.jmed12/e.rp.p*100)+'%':'-'}`:'전세 거래 없음'}</dd>
+     ${askHtml}
+     <dt>예산 대비</dt><dd>${e.rp?(e.rp.p/B*100).toFixed(0)+'%':'-'} <div class="bar"><span style="width:${pct}%;background:var(--${e.status})"></span></div><span class="small">예산 ${S.budget.toFixed(2)}억 (막대 중앙 = 예산선)</span></dd>
+     <dt>필요 대출</dt><dd>${loanNeeded.toFixed(2)}억 → 월 ${Math.round(pmt)}만원 <span class="small">(${K.rate}% · ${K.term}년, 순현금 ${L.cash.toFixed(2)}억 투입)</span>${loanNeeded>ltv?`<div class="small" style="color:var(--red)">LTV 한도 ${ltv.toFixed(1)}억 초과 → 승인 불가 구간</div>`:''}</dd>
+    </dl>
+    <h3>월별 실거래 중위 추이 <span class="small">${sz?sz.area+'㎡, 2024-10~2026-09':''}</span></h3>
+    ${chartSVG(sz?sz.series:null)}
+   </div>
+   <div>
+    <h3>매매 실거래 (최근 30건) <span class="small">국토부, 계약일 기준</span></h3>
+    ${tradesTbl}
+    <h3 style="margin-top:10px">전세 실거래 (최근 10건)</h3>
+    ${rentsTbl}
+    <h3 style="margin-top:10px">교육환경 <span class="small">${c.m.known?'분석가 평가표':'미평가 동(기본값)'}</span></h3>
+    <dl class="kv">
+     <dt>배정 후보 중학교</dt><dd>${c.m.mid}<div class="small">배정 단정 금지. 첫째 2029년·둘째 2032년 입학 기준 규정을 교육지원청·학구도에서 확인.</div></dd>
+     <dt>평판 / 학원</dt><dd>${'●'.repeat(c.m.rep)}${'○'.repeat(5-c.m.rep)} ${c.m.rep}/5 · ${'●'.repeat(c.m.acad)}${'○'.repeat(5-c.m.acad)} ${c.m.acad}/5</dd>
+     <dt>확인 가능 자료</dt><dd>${c.m.data}</dd>
+     <dt>고교</dt><dd>${c.m.high}</dd>
+    </dl>
+    <h3 style="margin-top:10px">호재 · 리스크 <span class="small">${c.m.area}</span></h3>
+    ${devHtml(devFor(c.m.area))}
+    <p class="small" style="margin-top:8px">원본 확인: ${c.hs?`<a target="_blank" rel="noopener" href="https://m.land.naver.com/complex/info/${c.hs}">네이버 부동산</a> · `:`<a target="_blank" rel="noopener" href="https://m.land.naver.com/search/result/${q}">네이버 부동산</a> · `}${c.zid?`<a target="_blank" rel="noopener" href="https://www.zigbang.com/home/apt/danjis/${c.zid}">직방</a> · `:''}<a target="_blank" rel="noopener" href="https://hogangnono.com/search?q=${q}">호갱노노</a> · <a target="_blank" rel="noopener" href="https://rt.molit.go.kr/">국토부 실거래</a> · <a target="_blank" rel="noopener" href="https://map.naver.com/p/search/${q}">네이버지도</a> · <a target="_blank" rel="noopener" href="https://www.schoolinfo.go.kr/">학교알리미</a></p>
+   </div>
+  </div>`;
+  d.querySelectorAll('.sizes button').forEach(b=>b.addEventListener('click',()=>{S.selSize[c.id]=Number(b.dataset.sz); refresh();}));
+}
+
+/* ---------------- NL PARSER ---------------- */
+function parseNL(t){
+  const chips=[]; const set=(k,v,label)=>{S[k]=v; chips.push(label);};
+  t=t.replace(/\s+/g,' ');
+  let m=t.match(/(?:예산|총액|한도)\s*(?:은|는|이|:)?\s*(\d+(?:\.\d+)?)\s*억/)||t.match(/(\d+(?:\.\d+)?)\s*억\s*(?:이하|까지|이내|안|정도|예산)/);
+  if(m){ set('budget',parseFloat(m[1]),`예산 <b>${m[1]}억</b>`); S.budgetManual=true; } else if(/계산기|산출|자동/.test(t)){ S.budgetManual=false; chips.push('예산 <b>계산기 결과</b> 사용'); }
+  m=t.match(/방\s*(\d)\s*개?\s*(필수|반드시|꼭)/); if(m){set('rooms',m[1]==='4'?'4s':'3',`방 <b>${m[1]}개 필수</b>`);}
+  else { const m4=/방\s*4\s*개?/.test(t), m3=/방\s*3\s*개?/.test(t)||/3\s*개(?:도|까지|면)?\s*(?:가능|허용|괜찮|돼|된다|OK|ok)/.test(t); if(m4&&m3) set('rooms','4','방 <b>4개 선호·3개 허용</b>'); else if(m4) set('rooms','4s','방 <b>4개 필수</b>'); else if(m3) set('rooms','3','방 <b>3개 이상</b>'); }
+  m=t.match(/(?:편도|출퇴근|출근|통근)[^\d]{0,12}(\d{2,3})\s*분/)||t.match(/(\d{2,3})\s*분\s*(?:이내|안|이하|컷)/); if(m){set('commute',Math.min(90,Math.max(15,parseInt(m[1]))),`출근 <b>${m[1]}분 이내</b>`);}
+  if(/자가용|자동차|차로|운전/.test(t)&&!/대중교통|지하철|버스/.test(t)) set('mode','car','이동 <b>자가용</b>'); else if(/대중교통|지하철|버스/.test(t)&&!/자가용|자동차/.test(t)) set('mode','transit','이동 <b>대중교통</b>'); else if(/자가용|대중교통/.test(t)) set('mode','best','이동 <b>빠른 수단</b>');
+  if(/학군|학업|면학|학원|교육환경|중학교/.test(t)){ if(/최우선|가장 중요|최상위|1순위|무엇보다/.test(t)) set('edu',5,'교육환경 <b>5등급(최우선)</b>'); else if(/중요|좋은|좋아야/.test(t)) set('edu',4,'교육환경 <b>4등급 이상</b>'); else set('edu',3,'교육환경 <b>3등급 이상</b>'); }
+  if(/무관|상관없|안 중요|덜 중요/.test(t)&&/학군|교육/.test(t)) set('edu',1,'교육환경 <b>무관</b>');
+  const over=/초과도 검토|초과 검토|넘어도|초과 가능|길어도/.test(t); set('eduOver',over,over?'교육 좋으면 <b>출근 초과 허용</b>':'출근 <b>초과 불허</b>');
+  m=t.match(/(\d{4})\s*년\s*(?:이후|이상|신축|부터)/); if(m) set('builtMin',parseInt(m[1]),`준공 <b>${m[1]}년 이후</b>`); else if(/신축|새 ?아파트|준신축/.test(t)) set('builtMin',2015,'<b>2015년 이후 신축</b>'); else set('builtMin',1990,'준공 1990년 이후');
+  m=t.match(/(\d{3,4}|\d,\d{3})\s*세대\s*(?:이상|넘|초과)?/); if(m) set('unitsMin',parseInt(m[1].replace(',','')),`<b>${m[1]}세대 이상</b>`); else if(/대단지/.test(t)) set('unitsMin',1000,'<b>대단지 1,000세대 이상</b>'); else set('unitsMin',300,'300세대 이상');
+  set('noReg',/비규제|규제지역 제외|토허구역 제외|규제 ?없는/.test(t),/비규제|규제지역 제외|토허구역 제외|규제 ?없는/.test(t)?'<b>규제지역 제외</b>':'규제지역 포함');
+  set('tradeOnly',!/거래\s*없어도|호가만/.test(t),'12개월 실거래 있는 단지만');
+  const ex=[]; const re=/([가-힣0-9·]+?)(?:은|는|도|,|\s)?\s*(?:제외|빼고|빼|말고|싫)/g; let mm; while((mm=re.exec(t))){ const w=mm[1].replace(/^(그리고|또|는|은)/,''); if(w.length>=2&&!/규제|토허|초과|검토|거래/.test(w)) ex.push(w); }
+  S.exclude=ex; if(ex.length) chips.push(`제외 <b>${ex.join(', ')}</b>`);
+  const inc=[]; const re2=/([가-힣0-9·]+(?:[·,]\s*[가-힣0-9]+)*)\s*(?:만|위주|중심|안에서|에서만|으로 한정|로 한정)/g; while((mm=re2.exec(t))){ mm[1].split(/[·,]\s*/).forEach(w=>{ if(w.length>=2&&!/예산|출근|학군|방|조건|계산기|결과|가족|자녀|초과|검토|세대/.test(w)) inc.push(w); }); }
+  S.include=inc; if(inc.length) chips.push(`포함 <b>${inc.join(', ')}</b>만`);
+  if(/2[45]\s*평|59\s*㎡/.test(t)) set('size',59,'면적 <b>59㎡</b>'); else if(/3[01]\s*평|74\s*㎡/.test(t)) set('size',74,'면적 <b>74㎡</b>'); else if(/3[3-5]\s*평|84\s*㎡/.test(t)) set('size',84,'면적 <b>84㎡</b>'); else if(/(?:39|40|41)\s*평|99\s*㎡|101\s*㎡/.test(t)) set('size',99,'면적 <b>99~101㎡</b>'); else if(/4[5-9]\s*평|114\s*㎡/.test(t)) set('size',114,'면적 <b>114㎡+</b>');
+  if(!/방\s*\d/.test(t) && /자녀\s*3|아이\s*3|세 ?자녀|3남매|5명/.test(t)) set('rooms','4','5인 가족 → 방 <b>4개 선호·3개 허용</b>');
+  document.getElementById('nlChips').innerHTML=chips.map(c=>`<span class="chip">${c}</span>`).join('')||'<span class="chip">해석된 조건이 없습니다.</span>';
+  S.selSize={}; S.listLimit=60; syncControls();
+}
+function syncControls(){
+  const b=computeBudget(); if(!S.budgetManual) S.budget=Math.round(b.B*100)/100;
+  document.getElementById('cBudget').value=S.budget.toFixed(1);
+  document.getElementById('cBudgetNote').textContent=S.budgetManual?`수동값 사용 중. 계산기 산출값은 ${b.B.toFixed(2)}억.`:`계산기 산출값 ${b.B.toFixed(2)}억 자동 반영 중. 직접 바꾸면 수동값이 우선합니다.`;
+  document.getElementById('cSize').value=String(S.size); document.getElementById('cRooms').value=S.rooms;
+  document.getElementById('cCommute').value=S.commute; document.getElementById('cCommuteV').textContent=S.commute;
+  document.getElementById('cMode').value=S.mode; document.getElementById('cEdu').value=S.edu; document.getElementById('cEduV').textContent=S.edu;
+  document.getElementById('cEduOver').checked=S.eduOver; document.getElementById('cBuilt').value=S.builtMin; document.getElementById('cUnits').value=S.unitsMin; document.getElementById('cTrade').checked=S.tradeOnly; document.getElementById('cNoReg').checked=S.noReg;
+  document.getElementById('cInclude').value=S.include.join(', '); document.getElementById('cExclude').value=S.exclude.join(', ');
+}
+function readControls(){
+  const bv=parseFloat(document.getElementById('cBudget').value); const b=computeBudget();
+  if(!isNaN(bv)){ if(Math.abs(bv-Math.round(b.B*100)/100)>0.051){S.budget=bv;S.budgetManual=true;} else {S.budgetManual=false;S.budget=Math.round(b.B*100)/100;} }
+  S.size=Number(document.getElementById('cSize').value); S.rooms=document.getElementById('cRooms').value;
+  S.commute=parseInt(document.getElementById('cCommute').value); S.mode=document.getElementById('cMode').value; S.edu=parseInt(document.getElementById('cEdu').value);
+  S.eduOver=document.getElementById('cEduOver').checked; S.builtMin=parseInt(document.getElementById('cBuilt').value)||1900; S.unitsMin=parseInt(document.getElementById('cUnits').value)||0; S.tradeOnly=document.getElementById('cTrade').checked; S.noReg=document.getElementById('cNoReg').checked;
+  const sp=v=>v.split(/[,、\s]+/).map(x=>x.trim()).filter(Boolean);
+  S.include=sp(document.getElementById('cInclude').value); S.exclude=sp(document.getElementById('cExclude').value);
+  S.selSize={}; S.listLimit=60;
+  document.getElementById('cCommuteV').textContent=S.commute; document.getElementById('cEduV').textContent=S.edu;
+  document.getElementById('cBudgetNote').textContent=S.budgetManual?`수동값 사용 중. 계산기 산출값은 ${b.B.toFixed(2)}억.`:`계산기 산출값 ${b.B.toFixed(2)}억 자동 반영 중.`;
+}
+
+/* ---------------- CALC ---------------- */
+const fmt=(x,d=2)=>(Math.round(x*Math.pow(10,d))/Math.pow(10,d)).toFixed(d);
+function findOwned(){ const seoul=C.find(c=>c.name.includes('반석블레스')); const pt=C.find(c=>c.dong==='죽백동'&&c.name.includes('해링턴코트')); return {seoul,pt}; }
+function ownedHtml(c,label,areaHint){
+  if(!c) return `<div class="callout warn"><b>${label}</b>: 수집 범위(최근 24개월) 내 국토부 실거래가 없습니다. 거래가 드문 단지라 인근 시세로 추정해야 합니다.</div>`;
+  const rows=[]; c.sizeKeys.forEach(k=>{const z=c.sizes[k]; z.trades.slice(0,6).forEach(t=>rows.push([z.area,t]));});
+  rows.sort((a,b)=>(b[1][0]+b[1][1])>(a[1][0]+a[1][1])?1:-1);
+  const jr=[]; c.sizeKeys.forEach(k=>c.sizes[k].rents.slice(0,3).forEach(t=>jr.push([c.sizes[k].area,t])));
+  return `<div class="callout"><b>${label}</b> — 국토부 실거래 ${rows.length?'':'(매매 없음)'}<div class="tbl"><table class="num">${rows.length?`<tr><th>면적</th><th>계약</th><th class="r">층</th><th class="r">매매</th></tr>${rows.slice(0,8).map(([a,t])=>`<tr><td>${a}㎡</td><td>${fmtYM(t[0])}.${String(t[1]).padStart(2,'0')}</td><td class="r">${t[2]}</td><td class="r">${fmtEok(t[3])}</td></tr>`).join('')}`:''}${jr.length?`<tr><th>면적</th><th>전세 계약</th><th class="r">층</th><th class="r">보증금</th></tr>${jr.slice(0,4).map(([a,t])=>`<tr><td>${a}㎡</td><td>${fmtYM(t[0])}</td><td class="r">${t[2]}</td><td class="r">${fmtEok(t[3])}</td></tr>`).join('')}`:''}</table></div><span class="small">${areaHint}</span></div>`;
+}
+function renderCalc(){
+  const b=computeBudget(); const L=b.L; const lv=Math.min(L.byPmt,L.byDsr,ltvCap(b.B)); const bind=lv===L.byPmt?'월 상환 한도':(lv===L.byDsr?'DSR 40%':'LTV/한도');
+  const own=findOwned();
+  document.getElementById('ownedTrades').innerHTML=ownedHtml(own.seoul,'사당 반석블레스','49세대 소규모 단지라 거래가 드뭅니다. 층·향 차이를 감안해 매도가를 입력하세요.')+ownedHtml(own.pt,'평택 소사벌 효성해링턴코트 (국토부 분류: 연립다세대)','이 단지는 아파트가 아니라 연립다세대로 신고됩니다. 2층 84~85㎡ 거래를 우선 참고하세요(테라스 타입).');
+  const ptRef=own.pt?refPrice(own.pt.sizes[own.pt.sizeKeys.find(k=>Math.abs(k-84)<=6)||own.pt.sizeKeys[0]]):null; if(own.pt&&ptRef){ const pk=own.pt.sizeKeys.find(k=>Math.abs(k-84)<=6)||own.pt.sizeKeys[0]; const f2=own.pt.sizes[pk].trades.filter(t=>t[2]===2); if(f2.length){ ptRef.src+=` · 2층 거래 ${f2.length}건 평균 ${fmtEok(Math.round(f2.reduce((a,t)=>a+t[3],0)/f2.length))}`; } }
+  document.getElementById('kPtHint').textContent=ptRef?`실거래 기준가 ${fmtEok(ptRef.p)} (${ptRef.src}). 매입가 5.0억 대비 손실.`:'실거래 없음. 인근 시세로 추정.';
+  const sRef=own.seoul?refPrice(own.seoul.sizes[own.seoul.sizeKeys[own.seoul.sizeKeys.length-1]]):null;
+  document.getElementById('kSeoulHint').textContent=sRef?`실거래 기준가 ${fmtEok(sRef.p)} (${sRef.src}).`:'24개월 내 실거래 없음. 49세대 나홀로 단지는 인근 대단지(사당자이·제일 24평 11.8~12.6억)보다 크게 낮게 형성되는 경우가 많고, 전세 4.5억을 감안한 추정치입니다.';
+  document.getElementById('loanOut').innerHTML=`<div class="tbl"><table class="num">
+   <tr><th>기준</th><th class="r">대출 가능액</th><th>설명</th></tr>
+   <tr><td>① 월 ${K.monthly}만원 상환 기준</td><td class="r"><b>${fmt(L.byPmt)}억</b></td><td class="small">${K.rate}% · ${K.term}년 원리금균등. 가족이 정한 상한선.</td></tr>
+   <tr><td>② 은행 DSR 40% 기준</td><td class="r">${fmt(L.byDsr)}억</td><td class="small">스트레스 금리 ${fmt(L.stress,1)}%(+1.5%p) 적용, 월 ${Math.round(L.dsrMonthly)}만원까지 심사상 허용.</td></tr>
+   <tr><td>③ LTV·한도 기준 (매수가 ${fmt(b.B,1)}억)</td><td class="r">${fmt(ltvCap(b.B))}억</td><td class="small">${K.region==='reg'?'규제지역 40%':'비규제 70%'} · 수도권 6억 캡.</td></tr>
+   <tr class="total"><td>적용 대출액</td><td class="r">${fmt(lv)}억</td><td class="small">구속 조건: <b>${bind}</b></td></tr></table></div>
+  <div class="callout ${L.byPmt<=L.byDsr?'good':'warn'}" style="margin-top:8px">${L.byPmt<=L.byDsr?`월 ${K.monthly}만원 원칙이 DSR보다 보수적이므로 <b>승인 가능액 ≠ 감당 가능액</b>입니다. 은행이 더 빌려준다고 예산을 늘리지 않는 것이 이 가족의 재정 안정 조건입니다.`:`DSR상 승인 한도가 월 상환 목표보다 작습니다. 소득 증빙·부채 정리가 먼저 필요합니다.`}</div>`;
+  const rows=[['사당 반석블레스 매도가','+',K.seoulPrice,'입력값'],['  전세보증금 반환','−',K.seoulJeonse,'2027-03 만기'],['  매도 중개보수(상한)','−',b.seoulBroker,''],['  양도소득세+지방소득세','−',b.seoulTax,{normal:'일반과세',exempt:'비과세(12억 초과분만)',heavy:'2주택 중과'}[K.seoulTaxMode]],
+   ['평택 효성해링턴코트 매도가','+',K.ptPrice,'매입가 5.0억 대비 손실 → 양도세 0'],['  대출 잔액 상환','−',K.ptLoan,''],['  매도 중개보수(상한)','−',b.ptBroker,''],['추가 투입 현금','+',K.extra,'미정'],['이사·수리·가전','−',K.moving,''],['비상금 유지','−',K.reserve,'생활비 6개월'],
+   ['= 투입 가능 순현금','=',b.cash,''],['+ 적용 대출','+',b.loan,bind+' 기준'],['− 매수 취득세(교육세 포함)','−',b.acq,`매수가 ${fmt(b.B,2)}억 기준`],['− 매수 중개보수(상한)','−',b.broker,''],['= 매수 가능 가격(예산)','=',b.B,'지도 탭 예산에 자동 반영']];
+  document.getElementById('budgetTbl').innerHTML=`<tr><th>항목</th><th class="r">억원</th><th>비고</th></tr>`+rows.map(r=>`<tr class="${r[1]==='='?'total':''}"><td>${r[0]}</td><td class="r num">${r[1]==='−'?'−':''}${fmt(r[2])}</td><td class="small">${r[3]}</td></tr>`).join('');
+  const sw=(mode)=>{const s=K.seoulTaxMode;K.seoulTaxMode=mode;const v=seoulCapGain();K.seoulTaxMode=s;return v;};
+  document.getElementById('budgetCallout').innerHTML=`<div class="callout"><b>예산 ${fmt(b.B,1)}억.</b> 월 ${K.monthly}만원 원칙을 지키면 예산의 ${Math.round(b.loan/b.B*100)}%만 대출입니다. 사당을 2주택 상태로 먼저 팔면 양도세가 약 <b>${fmt(sw('heavy'),2)}억</b>(일반과세 ${fmt(sw('normal'),2)}억 대비 +${fmt(sw('heavy')-sw('normal'),2)}억)로 늘어 예산이 줄어듭니다. <b>매도 순서: 평택 먼저 → 사당.</b> 예산 1억을 늘리려면 현금 1억 또는 월 상환 약 ${Math.round(principalToPmt(10000,K.rate,K.term))}만원 추가가 필요합니다.</div>`;
+}
+
+/* ---------------- REPORT ---------------- */
+function areaStats(){
+  const by={}; C.forEach(c=>{ const k=c.sizeKeys.find(k=>Math.abs(k-84)<=6); if(k==null) return; const z=c.sizes[k]; const r=refPrice(z); if(!r||!z.n12) return; (by[c.m.area]=by[c.m.area]||[]).push({c,p:r.p,z}); });
+  return Object.entries(by).filter(([a,arr])=>arr.length>=3).map(([a,arr])=>{ const ps=arr.map(x=>x.p).sort((x,y)=>x-y); const med=ps[Math.floor(ps.length/2)]; const cars=arr.map(x=>x.c.m.car); return {area:a,n:arr.length,med,min:ps[0],max:ps[ps.length-1],car:Math.round(cars.reduce((s,v)=>s+v,0)/cars.length),edu:Math.round(arr.reduce((s,x)=>s+eduScore(x.c),0)/arr.length*10)/10,reg:arr[0].c.reg}; }).sort((a,b)=>a.med-b.med);
+}
+function nameHit(dong,part){ return C.find(c=>c.dong===dong&&c.name.includes(part)); }
+function renderReport(){
+  const b=computeBudget(); const B=b.B; const Bman=B*10000; const st=areaStats();
+  const top=sorted().filter(c=>EV[c.id].status==='blue').slice(0,15);
+  const yel=sorted().filter(c=>EV[c.id].status==='yellow').slice(0,10);
+  const row=(c)=>{const e=EV[c.id]; return `<tr><td><span class="st st-${e.status}" style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px"></span>${c.name}<div class="small">${c.sgg} ${c.dong} · ${c.built||'?'}년 · ${c.units?c.units.toLocaleString()+'세대':''}</div></td><td class="num r">${e.rp?fmtEok(e.rp.p):'-'}<div class="small">${e.sz?e.sz.area+'㎡':''}${e.sz&&e.sz.n12?' · '+e.sz.n12+'건':''}</div></td><td class="num r">${e.rp?(e.rp.p/Bman*100).toFixed(0)+'%':'-'}</td><td class="num r">${c.m.car}/${c.m.transit}분</td><td class="num r">${e.es}</td><td class="small">${c.m.mid}</td></tr>`;};
+  const tbl=(arr)=>`<div class="tbl"><table><tr><th>단지</th><th class="r">기준가</th><th class="r">예산비</th><th class="r">출근(차/대중)</th><th class="r">교육</th><th>배정 후보 중학교</th></tr>${arr.map(row).join('')}</table></div>`;
+  const grp={A:[nameHit('영통동','황골마을'),nameHit('영통동','벽적골'),nameHit('영통동','살구골'),nameHit('영통동','청명마을'),nameHit('영통동','신나무실')].filter(Boolean),
+   B:[nameHit('반송동','한빛마을'),nameHit('반송동','시범'),nameHit('석우동','예당마을'),nameHit('능동','숲속마을')].filter(Boolean),
+   C:[nameHit('정자동','SK스카이뷰')||nameHit('정자동','스카이뷰'),nameHit('병점동','아이파크'),nameHit('중동','호수마을'),nameHit('영덕동','흥덕')].filter(Boolean)};
+  const uniq=(arr)=>arr.filter((c,i)=>arr.findIndex(x=>x.id===c.id)===i);
+  document.getElementById('report').innerHTML=`
+  <section><h2>요약</h2>
+   <div class="callout good"><b>결론.</b> 두 집을 정리하고 월 ${K.monthly}만원 원칙을 지킬 때 매수 예산은 약 <b>${fmt(B,1)}억</b>입니다. 아래 지역별 84㎡ 실거래 중위값 표를 보면 광교·수지·동탄역·망포 신축은 예산의 2배 안팎이고, 예산 안에 들어오는 지역은 영통 구도심, 수원 장안·권선·팔달 일부, 기흥 동부, 동탄1·동탄2 외곽, 병점, 오산입니다. 현재 조건으로 <b>파랑 ${sorted().filter(c=>EV[c.id].status==='blue').length}개 · 노랑 ${sorted().filter(c=>EV[c.id].status==='yellow').length}개</b> 단지가 나옵니다(지도 탭에서 조건을 바꾸면 이 리포트도 다시 계산됩니다).</div>
+   <ol>
+    <li><b>A안 영통 구도심 구축</b>: 수원 최상위 학원가와 영덕중 학군, 자가용 출근 15~20분. 대신 1997년 구축·방3·주차난.</li>
+    <li><b>B안 동탄1 성숙 학원가 + 방4 평형</b>: 비규제(LTV 70%), 방4·준신축, 학원가 성숙. 출근 25분(자가용), 예산 소폭 초과 가능.</li>
+    <li><b>C안 예산 내 방4 (정자 SK스카이뷰·흥덕·동백·병점 등)</b>: 공간·재정이 가장 편하고, 정자·흥덕은 교육도 중위 이상. 출근 13~30분.</li>
+   </ol>
+   <p>우선순위가 <b>중학교 면학 분위기와 학원 접근성</b>이므로 기본 추천은 A안, 방4가 절대 조건이면 B안 또는 C안(정자·흥덕)입니다.</p>
+  </section>
+  <section><h2>지역별 84㎡ 실거래 기준가 (최근 12개월 거래 단지)</h2>
+   <p class="small">기준가 = 단지별 최근 3개월(없으면 12개월) 실거래 중위. 지역 중위 = 그 단지들의 중위. 출근은 자가용 평균(추정). 규제 = 토지거래허가구역.</p>
+   <div class="tbl"><table class="num"><tr><th>지역</th><th class="r">단지 수</th><th class="r">중위</th><th class="r">최저~최고</th><th class="r">예산비</th><th class="r">출근</th><th class="r">교육</th><th>규제</th></tr>${st.map(s=>`<tr><td>${s.area}</td><td class="r">${s.n}</td><td class="r"><b>${fmtEok(s.med)}</b></td><td class="r">${fmtEok(s.min)} ~ ${fmtEok(s.max)}</td><td class="r" style="color:${s.med<=Bman?'var(--blue)':s.med<=Bman*1.15?'var(--yellow)':'var(--red)'}">${(s.med/Bman*100).toFixed(0)}%</td><td class="r">${s.car}분</td><td class="r">${s.edu}</td><td>${s.reg?'규제':'비규제'}</td></tr>`).join('')}</table></div>
+  </section>
+  <section><h2>1. 확인된 사실 · 가정 · 추가 확인</h2>
+   <p><span class="tag fact">사실</span> 가족·자산 조건(사용자 제공). 반석블레스 2016-03 준공 49세대 1개동. 국토부 실거래 ${DATA.meta.n.toLocaleString()}개 단지 수집(매매 2024-10~2026-09, 전세 2025-10~2026-09). 10·15 대책 규제지역, 다주택 중과 유예 종료(2026-05-09), 주담대 평균 4.36%(2026-08), 수원 2027학년도 중학군 개편.</p>
+   <p><span class="tag assume">가정</span> 사당 매도가 ${K.seoulPrice}억·취득가 ${K.seoulAcq}억·보유 ${K.seoulYears}년·${{normal:'일반과세',exempt:'비과세',heavy:'중과'}[K.seoulTaxMode]}, 평택 ${K.ptPrice}억, 금리 ${K.rate}% ${K.term}년, 세전 연소득 ${K.income.toLocaleString()}만. 출근시간은 동 단위 추정. 방 수는 면적·준공연도로 추정. 교육 등급은 분석가 평가표(공식 지표 아님).</p>
+   <p><span class="tag check">추가 확인</span> 반석블레스 실거래·비과세 요건, 평택 동일 타입 매물, 임차인 만기 협의, 은행 사전심사, 2029·2032학년도 배정 규정과 학구도, 후보 단지 리모델링 단계, 직장 주차.</p>
+  </section>
+  <section><h2>2. 보유 두 집의 시세</h2>
+   <p>계산기 탭 상단에 두 단지의 국토부 실거래가 표로 나옵니다. 사당은 소규모 단지라 거래가 드물어 층·향을 감안한 추정이 필요하고, 평택은 34평 실거래 중위값을 기준으로 2층·테라스 프리미엄과 저층 할인을 상쇄한 값으로 보는 것이 안전합니다. 매도 순서는 평택(양도차손) → 사당(1주택 상태) 입니다.</p>
+  </section>
+  <section><h2>3. 매수 예산 산출</h2>
+   <div class="tbl"><table class="num"><tr><th>단계</th><th class="r">억원</th></tr><tr><td>사당 매도 순현금 (양도세 ${fmt(b.seoulTax)} 포함 차감)</td><td class="r">${fmt(b.seoulNet)}</td></tr><tr><td>평택 매도 순현금</td><td class="r">${fmt(b.ptNet)}</td></tr><tr><td>− 이사·수리 ${fmt(K.moving)} − 비상금 ${fmt(K.reserve)} + 추가현금 ${fmt(K.extra)}</td><td class="r">${fmt(b.cash)}</td></tr><tr><td>+ 대출 (월 ${K.monthly}만 기준)</td><td class="r">${fmt(b.loan)}</td></tr><tr><td>− 취득세·매수 중개보수</td><td class="r">${fmt(b.acq+b.broker)}</td></tr><tr class="total"><td>매수 가능 가격</td><td class="r">${fmt(B)}</td></tr></table></div>
+   <p class="small">민감도: 사당 매도가 ±1억 → 예산 ±약 0.95억. 월 상환 +50만 → 대출 +${fmt(pmtToPrincipal(50,K.rate,K.term)/10000)}억.</p>
+  </section>
+  <section><h2>4. 대출: 월 상환 기준 vs 은행 승인 기준</h2>
+   <ul><li><b>가족 원칙(월 ${K.monthly}만)</b>: ${fmt(b.L.byPmt)}억. 실제 한도.</li><li><b>은행 DSR 40%</b>: 스트레스 금리 ${fmt(b.L.stress,1)}%로 ${fmt(b.L.byDsr)}억까지 심사 통과 가능하나 월 ${Math.round(b.L.dsrMonthly)}만원 상환은 무리.</li><li><b>LTV</b>: 규제 40%(처분조건부 50%)·비규제 70%, 6억 캡. ${fmt(B,1)}억대에선 구속 조건 아님.</li><li>규제지역 매수 시 토지거래허가·6개월 내 전입·2년 실거주.</li></ul>
+  </section>
+  <section><h2>5. 현재 조건에서 적합(파랑) 상위 단지</h2>${top.length?tbl(top):'<p>파랑 단지가 없습니다. 조건을 완화하세요.</p>'}
+   <h3 style="margin:14px 0 6px">개선하면 가능(노랑) 상위</h3>${yel.length?tbl(yel):'<p>없음</p>'}
+   <div class="callout" style="margin-top:12px"><b>출퇴근 해설.</b> 광교역은 신분당선 종점이라 <b>수지·상현·성복</b>은 전철 직결(10~20분), <b>영통·매탄·흥덕</b>은 자가용 12~20분(대중교통 30분대), <b>동탄</b>은 자가용 25~35분·대중교통 50분+, <b>기흥·죽전</b>은 환승 30~40분입니다. 자가용 출근이면 영통·매탄·흥덕이 시간 대비 유리하고, 직장 주차가 불가하면 수지 축이 유리합니다.</div>
+  </section>
+  <section><h2>6. 중학교 배정 주의</h2>
+   <ul><li>첫째 <b>2029학년도</b>, 둘째 <b>2032학년도</b> 입학. 지금 배정표로 단정 금지.</li><li>수원은 2027학년도부터 중학군 개편, 광교중학군 근거리 배정은 2028 이의8초·중 개교 후 재점검.</li><li>용인·화성은 각 교육지원청 규정, 동탄2는 신설학교로 학구 변경 잦음.</li><li>확인 순서: 학구도안내서비스 → 교육지원청 배정 시행계획 → 학교알리미 성취도·학생수 → 학원가 현장.</li><li>고교: 수원·용인 평준화(2027 '선지원 후추첨'), 화성·오산 비평준화.</li></ul>
+  </section>
+  <section><h2>7. 평택 손실과 별도로 본 갈아타기 비용</h2>
+   <ul><li><b>평택 손실</b>: 5.0억 → ${K.ptPrice}억, 약 ${fmt(5-K.ptPrice,1)}억. 매몰비용이며 결정과 분리.</li><li><b>일회성 갈아타기 비용</b>: 취득세·중개보수 ${fmt(b.acq+b.broker+b.seoulBroker+b.ptBroker)}억 + 양도세 ${fmt(b.seoulTax)}억 + 이사·수리 ${fmt(K.moving)}억 = 약 <b>${fmt(b.acq+b.broker+b.seoulBroker+b.ptBroker+b.seoulTax+K.moving)}억</b>.</li><li><b>연간 주거비</b>: 대출 ${fmt(b.loan)}억 이자 약 ${Math.round(b.loan*K.rate/100*10000)}만 + 재산세·관리비 300~450만. 반대로 평택 대출 이자(연 약 ${Math.round(1.7*K.rate/100*10000)}만)와 장거리 통근비·시간이 사라집니다.</li><li>본질은 <b>서울 소형 투자자산 + 평택 실거주를 수도권 남부 실거주 1채로 바꾸는 재배치</b>입니다.</li></ul>
+  </section>
+  <section><h2>8. 추천안 (실거래 데이터 반영)</h2>
+   ${[
+    {t:'A안 · 영통 구도심 구축 (황골·벽적골·살구골·청명·신나무실 84㎡)',arr:uniq(grp.A),good:['수원 최상위 학원가 도보권, 영덕중 학군(특목고 7.3%)','자가용 출근 15~18분, 대중교통 30분대','3,000세대급 구도심 인프라','호재: 1기 택지 리모델링·재건축 논의, 동탄인덕원선(2028~29)'],bad:['1997년 구축, 방3·주차난·층간소음','방4 포기','토허구역 허가 + 2년 실거주','리모델링 분담금·이주 변수'],flip:['방4가 절대 조건이면 B·C안','전철 통근 필수면 수지 구축(9억대 이상)으로 예산 재검토','예산 8.5억+ 확보 시 매탄 준신축(출근 12분)']},
+    {t:'B안 · 동탄1 성숙 학원가 방4 (시범한빛·예당·숲속마을 84~99㎡)',arr:uniq(grp.B),good:['방4 평형 확보 가능, 비규제(LTV 70%, 허가 불필요)','북광장·반송 학원가 성숙, 비평준화 내신 유리 가능','2007~08년 준공','호재: 동탄인덕원선·트램 개통 시 광교·영통 방면 전철'],bad:['자가용 25~28분, 대중교통 45~50분','평형에 따라 예산 소폭 초과','학군 평판 영통·수지보다 한 단계 아래'],flip:['추가 현금 확보 시 A안과 순위 역전 가능','대중교통 출근 전제면 부적합']},
+    {t:'C안 · 예산 내 방4 (정자 SK스카이뷰·흥덕·동백·병점)',arr:uniq(grp.C),good:['신축·대단지·방4를 예산 안에서','정자는 천천중 학군(특목고 4.9%)·3,498세대, 흥덕은 광교 인접·인동선 흥덕역','재정 여유로 학원비·비상금 확보','호재: 신분당선 호매실 연장(정자·화서), 인동선(흥덕), 진안신도시(병점)'],bad:['정자·병점·동백은 출근 25~30분','학군·학원가 중위(정자·흥덕 제외)','정자는 토허구역'],flip:['교육 요구를 3등급으로 낮추면 다수가 파랑','흥덕은 예산 소폭 초과 가능성']}
+   ].map(r=>`<div class="rec"><h3>${r.t}</h3>${r.arr.length?tbl(r.arr):'<p class="small">데이터에서 해당 단지를 찾지 못했습니다.</p>'}<div class="cols" style="margin-top:8px"><div><h4>장점</h4><ul>${r.good.map(x=>`<li>${x}</li>`).join('')}</ul></div><div><h4>포기해야 할 점</h4><ul>${r.bad.map(x=>`<li>${x}</li>`).join('')}</ul></div><div><h4>추천이 달라지는 조건</h4><ul>${r.flip.map(x=>`<li>${x}</li>`).join('')}</ul></div></div></div>`).join('')}
+   <div class="callout"><b>가족에게 설명할 한 문장.</b> "서울 집과 평택 집을 정리해 빚은 월 100만원 안으로 묶고, 아빠 출근 15분·아이들 학원 도보권인 영통에 먼저 자리를 잡는다. 집은 낡고 방은 셋이지만 첫째가 중학교 가는 2029년까지 학군을 직접 확인하며 자산을 지키고, 예산이 늘면 매탄·망포 신축으로 옮기는 2단계 계획이다."</div>
+   <h3 style="margin-top:14px">일정(2027-09 입주 목표)</h3>
+   <ul><li>2026-10~12: 반석블레스 세무 상담(비과세 요건), 평택 매물 등록, 은행 사전심사, 후보 단지 임장(평일 저녁 학원가).</li><li>2027-01~03: 평택 매도 계약 → 1주택. 사당 임차인 만기 협의.</li><li>2027-03~05: 사당 매도(공실 매도 유리). 토허구역이면 허가 신청 병행.</li><li>2027-05~07: 매수 계약, 잔금은 두 매도 잔금 이후.</li><li>2027-08~09: 잔금·이사·전입. 첫째 초5·둘째 초2 2학기 전학.</li></ul>
+  </section>
+  <section><h2>9. 호재와 리스크 지도 (분석가 의견)</h2>
+   <p><span class="conf c1">확정</span> 개통·개교일 공표 / <span class="conf c2">진행</span> 계획 확정, 일정 지연 가능 / <span class="conf c3">구상</span> 무산 가능. 시세에는 '진행' 단계에서 이미 절반쯤 반영됩니다.</p>
+   <div class="callout good"><b>이 가족 출근에 중요한 호재 두 개.</b> ① <b>동탄인덕원선(2028~29 목표)</b>: 동탄1·영통·흥덕에서 광교중앙 방면 전철. A안(영통)·B안(동탄1)·C안(흥덕)의 대중교통 출근 개선. ② <b>신분당선 호매실 연장(2029~31 목표)</b>: 정자·화서·호매실에서 광교역 직결 가능성.</div>
+   ${Object.keys(DEVS).map(k=>`<h3 style="margin:12px 0 4px">${k}</h3>${devHtml(DEVS[k])}`).join('')}
+  </section>`;
+}
+function renderFacts(){
+  const n=C.length, nt=C.reduce((s,c)=>s+c.sizeKeys.reduce((a,k)=>a+c.sizes[k].trades.length,0),0), ap=C.filter(c=>c.approx).length, ask=C.filter(c=>c.ask).length;
+  document.getElementById('facts').innerHTML=`
+  <section><h2>데이터 출처와 수집 방법 <span class="tag fact">사실</span></h2><ul>
+   <li><b>국토교통부 실거래가 공개시스템(rt.molit.go.kr)</b>: 아파트 매매 2024-10-01~2026-09-25, 전월세 2025-10-01~2026-09-25. 수원 영통·장안·권선·팔달구, 용인 수지·기흥구, 화성 동탄구·병점구, 오산시, 평택시, 서울 동작구. 계약일 기준, 해제 신고 건 제외, 전세만 사용(월세 제외). 단지별로 최근 30건(매매)·10건(전세)만 페이지에 담았고 월별 중위값은 전체 거래로 계산.</li>
+   <li><b>직방 단지 검색 API</b>: 단지 좌표·세대수·사용승인일·직방 단지 ID. 실거래 단지명과 이름 유사도로 매칭(동 일치 조건). 매칭 실패 단지는 동 중심 좌표로 표기하고 '위치 근사'로 표시.</li>
+   <li><b>네이버 부동산(모바일)</b>: 동별 단지 목록·매물 수·매매/전세 호가 범위. 수집 도중 네이버가 과다요청으로 차단해 일부 동만 수집됨(호가 있는 단지 ${ask}개). 없는 단지는 상세의 네이버 링크로 확인.</li>
+   <li>수집 결과: 단지 ${n.toLocaleString()}개, 매매 실거래 ${nt.toLocaleString()}건(페이지 내장분), 위치 근사 ${ap}개. 화성시는 2026년 일반구 신설로 동탄구·병점구 코드로 수집(효행구·만세구는 제외).</li>
+  </ul></section>
+  <section><h2>규제·세금·금리 사실 <span class="tag fact">사실</span></h2><ul>
+   <li>2025-10-15 대책: 서울 전역 + 과천·광명·성남(분당·수정·중원)·수원(영통·장안·팔달)·안양 동안·용인 수지·의왕·하남 → 조정대상지역·투기과열지구·토지거래허가구역. 무주택 LTV 40%, 주담대 한도 15억 이하 6억, 2년 실거주.</li>
+   <li>처분조건부 1주택자 규제지역 LTV 50%. 규제지역 주담대 6개월 내 전입 의무.</li>
+   <li>다주택 양도세 중과 유예 2026-05-09 종료(2주택 +20%p, 장특공 배제). 일시적 2주택 종전주택 처분기간 3년.</li>
+   <li>취득세 1~3% 기본, 조정대상지역 2주택 8%. 주담대 평균 4.36%(2026-08), 기준금리 3.00%.</li>
+   <li>수원 2027학년도 중학군 개편, 광교중학군 근거리 배정 2028 재점검. 경기 2027학년도 고교 '선지원 후추첨'. 특목고 진학(2024): 연무중 9.4%, 영덕중 7.3%, 천천중 4.9%.</li>
+  </ul></section>
+  <section><h2>가정 <span class="tag assume">가정</span></h2><ul>
+   <li>기준가 산정 순서: 최근 3개월 중위 → 12개월 중위 → 마지막 거래 → 네이버 호가. 층·향·수리 상태는 반영되지 않음.</li>
+   <li>출근시간: 동 단위 분석가 추정(평일 08시대). 평가표에 없는 동은 직선거리 기반 공식.</li>
+   <li>방 수: 면적·준공연도 기반 추정. 교육 등급: 학부모 평판·학원가 규모 종합, 공식 지표 아님.</li>
+   <li>사당 매도가·취득가, 평택 매도가, 금리, 소득은 계산기 입력값.</li>
+  </ul></section>
+  <section><h2>추가 확인 사항 <span class="tag check">확인</span></h2><ul>
+   <li>반석블레스 실거래·비과세 요건(취득일·거주 이력) → 예산이 1억 이상 달라질 수 있음.</li><li>평택 동일 타입(2층 테라스) 매물 호가.</li><li>사당 임차인 갱신요구권·승계 협의.</li><li>은행 사전심사(처분조건부, 전입 기한).</li><li>후보 단지 학구도와 2029·2032학년도 배정 규정, 학교알리미 성취도.</li><li>구축 단지 리모델링·재건축 단계와 분담금.</li><li>직장 주차 가능 여부, 4세 어린이집 대기, 초등 2학기 전학.</li><li>세무사: 매도 순서별 세액, 일시적 2주택 취득세.</li>
+  </ul></section>
+  <section><h2>출처 링크</h2><ul class="small"><li>rt.molit.go.kr · apis.zigbang.com · m.land.naver.com · hogangnono.com · kbland.kr</li><li>10·15 대책: korea.kr, kbthink.com, fsc.go.kr · 양도세 중과 유예 종료: korea.kr(2026-05) · 금리: 헤럴드경제·뉴스핌(2026-08), KB주택시장리뷰 2026-09</li><li>학군: 수원교육지원청 goesw.kr, 중학군 개편 보도(2025-12), allinfo.today(2024 특목고 진학), 아파트미 중학교 성취도</li></ul></section>`;
+}
+
+/* ---------------- WIRING ---------------- */
+function refresh(){ evalAll(); drawMarkers(); renderTree(); renderList(); if(S.selected||S.region) renderDetail(); renderCalc(); renderReport(); }
+function bindCalc(){
+  const map={kSeoulPrice:'seoulPrice',kSeoulJeonse:'seoulJeonse',kSeoulAcq:'seoulAcq',kSeoulYears:'seoulYears',kSeoulTaxMode:'seoulTaxMode',kPtPrice:'ptPrice',kPtLoan:'ptLoan',kMoving:'moving',kReserve:'reserve',kExtra:'extra',kMonthly:'monthly',kRate:'rate',kTerm:'term',kIncome:'income',kOtherDebt:'otherDebt',kRegion:'region'};
+  for(const id in map){ const el=document.getElementById(id); el.addEventListener('input',()=>{ const v=el.tagName==='SELECT'?el.value:parseFloat(el.value); if(el.tagName!=='SELECT'&&isNaN(v))return; K[map[id]]=v; if(!S.budgetManual){S.budget=Math.round(computeBudget().B*100)/100;} syncControls(); refresh(); }); }
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b)); document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!=='tab-'+b.dataset.tab); try{localStorage.setItem('gh_tab',b.dataset.tab);}catch(e){}}));
+document.getElementById('nlApply').addEventListener('click',()=>{parseNL(document.getElementById('nlInput').value); refresh();});
+document.getElementById('nlReset').addEventListener('click',()=>{S.hj.clear(); S.region=null; document.getElementById('regionCard').hidden=true; Object.assign(S,{budgetManual:false,size:84,rooms:'4',commute:60,mode:'best',edu:3,eduOver:true,builtMin:1990,unitsMin:300,tradeOnly:true,noReg:false,include:[],exclude:[],selSize:{},listLimit:60}); document.getElementById('nlChips').innerHTML=''; syncControls(); refresh();});
+['cBudget','cSize','cRooms','cCommute','cMode','cEdu','cEduOver','cBuilt','cUnits','cTrade','cNoReg','cInclude','cExclude'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{readControls(); refresh();}));
+document.getElementById('moreBtn').addEventListener('click',()=>{S.listLimit+=60; renderList();});
+document.getElementById('tgAll').addEventListener('click',()=>setFilter('all'));
+document.getElementById('tgBlue').addEventListener('click',()=>setFilter('blue'));
+document.getElementById('tgBY').addEventListener('click',()=>setFilter('by'));
+function setFilter(f){S.filter=f;S.listLimit=60;['tgAll','tgBlue','tgBY'].forEach(id=>document.getElementById(id).setAttribute('aria-pressed',(f==='all'&&id==='tgAll')||(f==='blue'&&id==='tgBlue')||(f==='by'&&id==='tgBY')));drawMarkers();renderList();}
+document.getElementById('zGg').addEventListener('click',()=>zoomTo(37.292,127.052,220));
+document.getElementById('zYt').addEventListener('click',()=>zoomTo(37.252,127.065,220));
+document.getElementById('zSj').addEventListener('click',()=>zoomTo(37.315,127.085,260));
+document.getElementById('zDt').addEventListener('click',()=>zoomTo(37.203,127.090,300));
+document.getElementById('zAll').addEventListener('click',()=>{zoomTarget={x:0,y:0,w:MW,h:MH};animateZoom();});
+document.getElementById('zIn').addEventListener('click',()=>{const T=zoomTarget||{...VB};const cx=T.x+T.w/2,cy=T.y+T.h/2;const w=T.w*0.7,h=w*MH/MW;zoomTarget={x:cx-w/2,y:cy-h/2,w,h};animateZoom();});
+document.getElementById('zOut').addEventListener('click',()=>{const T=zoomTarget||{...VB};const cx=T.x+T.w/2,cy=T.y+T.h/2;const w=Math.min(1600,T.w/0.7),h=w*MH/MW;zoomTarget={x:cx-w/2,y:cy-h/2,w,h};animateZoom();});
+
+bindCalc();
+S.budget=Math.round(computeBudget().B*100)/100;
+evalAll();
+parseNL(document.getElementById('nlInput').value);
+drawMap(); renderFacts(); refresh(); window.addEventListener('scroll',hideTip,{passive:true});
+(function(){ const first=sorted().find(c=>EV[c.id].status==='blue'); if(first){S.selected=first.id; renderList(); drawMarkers(); renderDetail();} })();
+try{const t=localStorage.getItem('gh_tab'); if(t&&document.querySelector(`.tabs button[data-tab="${t}"]`)) document.querySelector(`.tabs button[data-tab="${t}"]`).click();}catch(e){}
+</script>

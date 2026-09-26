@@ -197,7 +197,7 @@ td.r,th.r{text-align:right}
 <div class="wrap">
 <header class="top">
   <h1>광교 출근 집찾기</h1>
-  <span class="sub"><b id="hdrN">-</b>개 단지 · 국토부 실거래(매매 2024-10~2026-09, 전세 2025-10~2026-09) · 직방 단지정보 · 네이버 부동산 호가. 조건을 넣으면 <b style="color:var(--blue)">파랑(적합)</b> · <b style="color:var(--yellow)">노랑(개선하면 가능)</b> · <b style="color:var(--red)">빨강(부적합)</b>으로 판정합니다. 기준일 2026-09-25.</span>
+  <span class="sub"><b id="hdrN">불러오는 중…</b>  · 국토부 실거래(매매 2024-10~2026-09, 전세 2025-10~2026-09) · 직방 단지정보 · 네이버 부동산 호가. 조건을 넣으면 <b style="color:var(--blue)">파랑(적합)</b> · <b style="color:var(--yellow)">노랑(개선하면 가능)</b> · <b style="color:var(--red)">빨강(부적합)</b>으로 판정합니다. 기준일 2026-09-25.</span>
 </header>
 
 <div class="tabs" role="tablist">
@@ -253,6 +253,7 @@ td.r,th.r{text-align:right}
           <button id="zGg">광교</button><button id="zYt">영통</button><button id="zSj">수지</button><button id="zDt">동탄</button><button id="zAll">전체보기</button>
           <button id="zIn">＋</button><button id="zOut">－</button>
         </div>
+        <div id="loadMsg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;z-index:1">지도와 1,300여 개 단지 실거래 데이터를 불러오는 중입니다… (약 4MB, 5~15초)</div>
         <svg id="map" viewBox="0 0 1000 1070" role="img" aria-label="광교역 주변 아파트 단지 지도"></svg>
         <div id="tip" class="tip" hidden></div>
         <div id="regionCard" class="rcard" hidden></div>
@@ -316,8 +317,11 @@ td.r,th.r{text-align:right}
 <div class="foot">의사결정 보조 도구입니다. 실거래는 국토교통부 실거래가 공개시스템(계약일 기준, 해제 건 제외), 단지 좌표·세대수·사용승인은 직방 단지정보, 호가는 네이버 부동산 모바일에서 2026-09-25에 수집했으며 이후 변동은 반영되지 않습니다. 계약 전 원본과 학교알리미·학구도·교육지원청·은행·세무사 확인을 거치세요. 투자 자문이 아닙니다.</div>
 </div>
 
+<script defer src="data.js"></script>
+<script defer src="mapdata.js"></script>
 <script>
-/*__DATA__*/
+document.addEventListener('DOMContentLoaded',function(){
+if(typeof DATA==='undefined'||typeof MAPDATA==='undefined'){ document.getElementById('hdrN').textContent='데이터 로드 실패'; document.getElementById('loadMsg').textContent='데이터 파일(data.js, mapdata.js)을 불러오지 못했습니다. 새로고침해 주세요.'; return; }
 /* ---------------- 지역 메타 (동 단위, 분석가 입력) ---------------- */
 const WORK={lat:37.3017,lng:127.0448};
 const REG_GU={'수원시 영통구':1,'수원시 장안구':1,'수원시 팔달구':1,'용인시 수지구':1,'서울 동작구':1};
@@ -1030,4 +1034,7 @@ parseNL(document.getElementById('nlInput').value);
 drawMap(); renderFacts(); refresh(); bindSS(); document.getElementById('gotoMap').addEventListener('click',()=>document.getElementById('mapbox').scrollIntoView({behavior:'smooth',block:'start'})); window.addEventListener('scroll',hideTip,{passive:true});
 (function(){ const first=sorted().find(c=>EV[c.id].status==='blue'); if(first){S.selected=first.id; renderList(); drawMarkers(); renderDetail();} })();
 try{const t=localStorage.getItem('gh_tab'); if(t&&document.querySelector(`.tabs button[data-tab="${t}"]`)) document.querySelector(`.tabs button[data-tab="${t}"]`).click();}catch(e){}
+
+document.getElementById('loadMsg').remove();
+});
 </script>

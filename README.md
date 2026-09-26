@@ -12,7 +12,7 @@
 - 행정안전부 행정동 경계(vuski/admdongkor, 2026-07), OpenStreetMap 도로·철도·수계.
 
 ## 구성
-- `index.html`: 완성 페이지
+- `index.html`: 페이지 본문, `data.js`(단지·실거래)와 `mapdata.js`(지도 레이어)를 로드
 - `scripts/`: 수집·병합·빌드 스크립트 (`scrape_molit.py` → `geocode_zigbang.py`/`geocode_pass2.py` → `build_data.py` → `process_map.py` → `patch_map.py` → `page_build.py`)
 - `data/complexes.json`: 병합된 단지 데이터, `data/mapdata.js`: 지도 벡터 레이어
 

@@ -118,6 +118,7 @@ header.top .sub{color:var(--muted);font-size:13px}
 .calc .f:last-child{border-bottom:0}
 .calc input[type=number]{text-align:right}
 .calc .f .small{grid-column:1/-1}
+.ss{display:grid;gap:4px;margin-top:6px;font-size:13px}.ss label{display:flex;gap:6px;align-items:flex-start}.ss input{margin-top:3px}
 table{border-collapse:collapse;width:100%;font-size:13px}
 th,td{padding:6px 8px;border-bottom:1px solid var(--line2);text-align:left;vertical-align:top}
 th{font-weight:600;color:var(--muted);font-size:12px}
@@ -275,7 +276,17 @@ td.r,th.r{text-align:right}
       <div class="f"><label for="kSeoulJeonse">전세보증금 반환 (억)</label><input type="number" id="kSeoulJeonse" step="0.1" value="4.5"></div>
       <div class="f"><label for="kSeoulAcq">사당 취득가 (억)</label><input type="number" id="kSeoulAcq" step="0.1" value="5.0"><span class="small">가정. 양도세 계산용. 실제 취득가·취득일·거주 이력 확인 필요.</span></div>
       <div class="f"><label for="kSeoulYears">사당 보유 연수</label><input type="number" id="kSeoulYears" step="1" value="8"></div>
-      <div class="f"><label for="kSeoulTaxMode">사당 양도세 시나리오</label><select id="kSeoulTaxMode"><option value="normal">일반과세(1주택이지만 비과세 요건 미충족)</option><option value="exempt">1세대1주택 비과세(2년 보유·거주 요건 충족)</option><option value="heavy">2주택 중과(+20%p, 장특공 배제)</option></select><span class="small">2026-05-10부터 다주택 중과 유예 종료. 서울 전역이 조정대상지역이므로 <b>평택을 먼저 팔고 1주택 상태로 사당을 팔면</b> 중과를 피할 수 있습니다.</span></div>
+      <div class="f"><label for="kSeoulTaxMode">사당 양도세 시나리오</label><select id="kSeoulTaxMode"><option value="exempt">1세대1주택 비과세 — 상생임대주택 특례로 거주요건 면제(기본)</option><option value="normal">일반과세(상생임대 요건 미충족 시)</option><option value="heavy">2주택 중과(+20%p, 장특공 배제)</option></select><span class="small">상생임대주택 특례는 <b>1세대 1주택 비과세의 2년 거주 요건만 면제</b>해 줍니다. 그래서 순서가 핵심입니다: <b>평택(양도차손)을 먼저 팔아 1주택이 된 뒤 사당을 팔아야</b> 비과세가 됩니다. 반대로 2주택 상태로 사당을 먼저 팔면 특례를 못 쓰고 2주택 중과(+20%p)까지 붙습니다. (2026-05-10 중과 유예 종료)</span></div>
+      <div class="callout" id="ssBox" style="margin:8px 0">
+        <b>상생임대주택(착한 임대인) 특례 체크리스트</b> <span class="small">모두 해당하면 사당 양도세 0(양도가 12억 이하). 하나라도 어긋나면 일반과세로 계산합니다.</span>
+        <div class="ss"><label><input type="checkbox" class="ssc" checked> 직전 임대차계약을 내가 임대인으로 1년 6개월 이상 유지했다(승계한 계약 아님)</label>
+        <label><input type="checkbox" class="ssc" checked> 그 뒤 재계약(상생임대차계약)에서 보증금·월세 인상률이 5% 이내였다 (보증금 4.5억 기준, 직전보다 5% 초과 인상 없음)</label>
+        <label><input type="checkbox" class="ssc" checked> 상생임대차계약을 2021-12-20 ~ 2026-12-31 사이에 체결·임대 개시했고 임대기간이 2년 이상이다 (현재 계약 만료 2027-03 → 2025-03 개시라면 충족)</label>
+        <label><input type="checkbox" class="ssc" checked> 양도 시점에 1세대 1주택 상태다 (평택을 먼저 팔거나, 일시적 2주택 요건 충족)</label>
+        <label><input type="checkbox" class="ssc" checked> 양도가액 12억 이하 (초과분만 과세)</label>
+        <label><input type="checkbox" class="ssc" checked> 임대 종료 후 1년 내 양도 (2026-08-04 이후 신규 계약분에 신설된 요건 · 기존 계약이면 무관하지만 2027년 매도 계획이므로 어차피 충족)</label></div>
+        <div class="small" id="ssNote" style="margin-top:6px"></div>
+      </div>
       <div class="f" style="margin-top:8px"><label for="kPtPrice">평택 효성해링턴코트 예상 매도가 (억)</label><input type="number" id="kPtPrice" step="0.1" value="3.9"><span class="small" id="kPtHint"></span></div>
       <div class="f"><label for="kPtLoan">평택 대출 잔액 상환 (억)</label><input type="number" id="kPtLoan" step="0.1" value="1.7"></div>
       <div class="f"><label for="kMoving">이사·수리·가전 (억)</label><input type="number" id="kMoving" step="0.05" value="0.2"></div>
@@ -440,7 +451,7 @@ const fmtYM=(ym)=>ym?ym.slice(0,4)+'.'+ym.slice(4):'';
 
 /* ---------------- STATE ---------------- */
 const S = {region:null,hj:new Set(),budget:7.0,budgetManual:false,size:84,rooms:'4',commute:60,mode:'best',edu:3,eduOver:true,builtMin:1990,unitsMin:300,tradeOnly:true,noReg:false,include:[],exclude:[],filter:'all',selected:null,selSize:{},listLimit:60};
-const K = {seoulPrice:7.4,seoulJeonse:4.5,seoulAcq:5.0,seoulYears:8,seoulTaxMode:'normal',ptPrice:3.9,ptLoan:1.7,moving:0.2,reserve:0.3,extra:0,monthly:100,rate:4.4,term:30,income:7000,otherDebt:0,region:'reg'};
+const K = {seoulPrice:7.4,seoulJeonse:4.5,seoulAcq:5.0,seoulYears:8,seoulTaxMode:'exempt',ptPrice:3.9,ptLoan:1.7,moving:0.2,reserve:0.3,extra:0,monthly:100,rate:4.4,term:30,income:7000,otherDebt:0,region:'reg'};
 
 /* ---------------- FINANCE ---------------- */
 function pmtToPrincipal(m, ratePct, years){const r=ratePct/100/12,n=years*12;if(r===0)return m*n;return m*(1-Math.pow(1+r,-n))/r;}
@@ -910,7 +921,7 @@ function renderReport(){
   const uniq=(arr)=>arr.filter((c,i)=>arr.findIndex(x=>x.id===c.id)===i);
   document.getElementById('report').innerHTML=`
   <section><h2>요약</h2>
-   <div class="callout good"><b>결론.</b> 두 집을 정리하고 월 ${K.monthly}만원 원칙을 지킬 때 매수 예산은 약 <b>${fmt(B,1)}억</b>입니다. 아래 지역별 84㎡ 실거래 중위값 표를 보면 광교·수지·동탄역·망포 신축은 예산의 2배 안팎이고, 예산 안에 들어오는 지역은 영통 구도심, 수원 장안·권선·팔달 일부, 기흥 동부, 동탄1·동탄2 외곽, 병점, 오산입니다. 현재 조건으로 <b>파랑 ${sorted().filter(c=>EV[c.id].status==='blue').length}개 · 노랑 ${sorted().filter(c=>EV[c.id].status==='yellow').length}개</b> 단지가 나옵니다(지도 탭에서 조건을 바꾸면 이 리포트도 다시 계산됩니다).</div>
+   <div class="callout good"><b>결론.</b> 두 집을 정리하고 월 ${K.monthly}만원 원칙을 지킬 때 매수 예산은 약 <b>${fmt(B,1)}억</b>입니다${K.seoulTaxMode==='exempt'?' (사당은 상생임대주택 특례로 1세대1주택 비과세 가정, 양도세 0)':''}. 아래 지역별 84㎡ 실거래 중위값 표를 보면 광교·수지·동탄역·망포 신축은 예산의 2배 안팎이고, 예산 안에 들어오는 지역은 영통 구도심, 수원 장안·권선·팔달 일부, 기흥 동부, 동탄1·동탄2 외곽, 병점, 오산입니다. 현재 조건으로 <b>파랑 ${sorted().filter(c=>EV[c.id].status==='blue').length}개 · 노랑 ${sorted().filter(c=>EV[c.id].status==='yellow').length}개</b> 단지가 나옵니다(지도 탭에서 조건을 바꾸면 이 리포트도 다시 계산됩니다).</div>
    <ol>
     <li><b>A안 영통 구도심 구축</b>: 수원 최상위 학원가와 영덕중 학군, 자가용 출근 15~20분. 대신 1997년 구축·방3·주차난.</li>
     <li><b>B안 동탄1 성숙 학원가 + 방4 평형</b>: 비규제(LTV 70%), 방4·준신축, 학원가 성숙. 출근 25분(자가용), 예산 소폭 초과 가능.</li>
@@ -923,12 +934,12 @@ function renderReport(){
    <div class="tbl"><table class="num"><tr><th>지역</th><th class="r">단지 수</th><th class="r">중위</th><th class="r">최저~최고</th><th class="r">예산비</th><th class="r">출근</th><th class="r">교육</th><th>규제</th></tr>${st.map(s=>`<tr><td>${s.area}</td><td class="r">${s.n}</td><td class="r"><b>${fmtEok(s.med)}</b></td><td class="r">${fmtEok(s.min)} ~ ${fmtEok(s.max)}</td><td class="r" style="color:${s.med<=Bman?'var(--blue)':s.med<=Bman*1.15?'var(--yellow)':'var(--red)'}">${(s.med/Bman*100).toFixed(0)}%</td><td class="r">${s.car}분</td><td class="r">${s.edu}</td><td>${s.reg?'규제':'비규제'}</td></tr>`).join('')}</table></div>
   </section>
   <section><h2>1. 확인된 사실 · 가정 · 추가 확인</h2>
-   <p><span class="tag fact">사실</span> 가족·자산 조건(사용자 제공). 반석블레스 2016-03 준공 49세대 1개동. 국토부 실거래 ${DATA.meta.n.toLocaleString()}개 단지 수집(매매 2024-10~2026-09, 전세 2025-10~2026-09). 10·15 대책 규제지역, 다주택 중과 유예 종료(2026-05-09), 주담대 평균 4.36%(2026-08), 수원 2027학년도 중학군 개편.</p>
+   <p><span class="tag fact">사실</span> 가족·자산 조건(사용자 제공). 반석블레스 2016-03 준공 49세대 1개동. 국토부 실거래 ${DATA.meta.n.toLocaleString()}개 단지 수집(매매 2024-10~2026-09, 전세 2025-10~2026-09). 10·15 대책 규제지역, 다주택 중과 유예 종료(2026-05-09), 주담대 평균 4.36%(2026-08), 수원 2027학년도 중학군 개편. 상생임대주택 특례: 직전계약 1년6개월 이상 + 5% 이내 인상 재계약을 2021-12-20~2026-12-31에 체결·개시하고 2년 이상 임대하면 1세대1주택 비과세(12억 이하)·장특공의 2년 거주요건 면제, 2026-08-04 이후 신규 계약분은 임대 종료 후 1년 내 양도 요건 추가(기재부 10문10답, 2026 세제개편).</p>
    <p><span class="tag assume">가정</span> 사당 매도가 ${K.seoulPrice}억·취득가 ${K.seoulAcq}억·보유 ${K.seoulYears}년·${{normal:'일반과세',exempt:'비과세',heavy:'중과'}[K.seoulTaxMode]}, 평택 ${K.ptPrice}억, 금리 ${K.rate}% ${K.term}년, 세전 연소득 ${K.income.toLocaleString()}만. 출근시간은 동 단위 추정. 방 수는 면적·준공연도로 추정. 교육 등급은 분석가 평가표(공식 지표 아님).</p>
    <p><span class="tag check">추가 확인</span> 반석블레스 실거래·비과세 요건, 평택 동일 타입 매물, 임차인 만기 협의, 은행 사전심사, 2029·2032학년도 배정 규정과 학구도, 후보 단지 리모델링 단계, 직장 주차.</p>
   </section>
   <section><h2>2. 보유 두 집의 시세</h2>
-   <p>계산기 탭 상단에 두 단지의 국토부 실거래가 표로 나옵니다. 사당은 소규모 단지라 거래가 드물어 층·향을 감안한 추정이 필요하고, 평택은 34평 실거래 중위값을 기준으로 2층·테라스 프리미엄과 저층 할인을 상쇄한 값으로 보는 것이 안전합니다. 매도 순서는 평택(양도차손) → 사당(1주택 상태) 입니다.</p>
+   <p>계산기 탭 상단에 두 단지의 국토부 실거래가 표로 나옵니다. 사당은 소규모 단지라 거래가 드물어 층·향을 감안한 추정이 필요하고, 평택은 34평 실거래 중위값을 기준으로 2층·테라스 프리미엄과 저층 할인을 상쇄한 값으로 보는 것이 안전합니다. 매도 순서는 평택(양도차손) → 사당(1주택 상태) 입니다. 사당은 상생임대주택 특례 요건을 갖췄다면 2년 거주 없이도 12억 이하 전액 비과세이므로, 이 순서만 지키면 양도세가 0에 가깝습니다.</p>
   </section>
   <section><h2>3. 매수 예산 산출</h2>
    <div class="tbl"><table class="num"><tr><th>단계</th><th class="r">억원</th></tr><tr><td>사당 매도 순현금 (양도세 ${fmt(b.seoulTax)} 포함 차감)</td><td class="r">${fmt(b.seoulNet)}</td></tr><tr><td>평택 매도 순현금</td><td class="r">${fmt(b.ptNet)}</td></tr><tr><td>− 이사·수리 ${fmt(K.moving)} − 비상금 ${fmt(K.reserve)} + 추가현금 ${fmt(K.extra)}</td><td class="r">${fmt(b.cash)}</td></tr><tr><td>+ 대출 (월 ${K.monthly}만 기준)</td><td class="r">${fmt(b.loan)}</td></tr><tr><td>− 취득세·매수 중개보수</td><td class="r">${fmt(b.acq+b.broker)}</td></tr><tr class="total"><td>매수 가능 가격</td><td class="r">${fmt(B)}</td></tr></table></div>
@@ -993,6 +1004,7 @@ function renderFacts(){
 
 /* ---------------- WIRING ---------------- */
 function refresh(){ evalAll(); drawMarkers(); renderTree(); renderList(); if(S.selected||S.region) renderDetail(); renderCalc(); renderReport(); }
+function bindSS(){ const boxes=[...document.querySelectorAll('.ssc')]; const sel=document.getElementById('kSeoulTaxMode'); const upd=()=>{ const ok=boxes.every(b=>b.checked); const n=boxes.filter(b=>!b.checked).length; if(ok){ if(K.seoulTaxMode==='normal'){K.seoulTaxMode='exempt'; sel.value='exempt';} } else if(K.seoulTaxMode==='exempt'){ K.seoulTaxMode='normal'; sel.value='normal'; } const sw=(m)=>{const s0=K.seoulTaxMode;K.seoulTaxMode=m;const v=seoulCapGain();K.seoulTaxMode=s0;return v;}; document.getElementById('ssNote').innerHTML= ok?`요건 충족 가정 → 사당 양도세 <b>0원</b> (일반과세였다면 약 ${fmt(sw('normal'),2)}억, 2주택 중과였다면 약 ${fmt(sw('heavy'),2)}억). 계약서·임대 기간·인상률 증빙을 세무사와 확인하세요.`:`${n}개 요건 미충족 → 일반과세로 계산(약 ${fmt(sw('normal'),2)}억). 특히 "1세대 1주택" 요건은 <b>평택을 먼저 매도</b>하면 충족됩니다.`; if(!S.budgetManual){S.budget=Math.round(computeBudget().B*100)/100;} syncControls(); refresh(); }; boxes.forEach(b=>b.addEventListener('change',upd)); sel.addEventListener('change',()=>{ if(sel.value!=='exempt'){ /* manual override keeps */ } }); upd(); }
 function bindCalc(){
   const map={kSeoulPrice:'seoulPrice',kSeoulJeonse:'seoulJeonse',kSeoulAcq:'seoulAcq',kSeoulYears:'seoulYears',kSeoulTaxMode:'seoulTaxMode',kPtPrice:'ptPrice',kPtLoan:'ptLoan',kMoving:'moving',kReserve:'reserve',kExtra:'extra',kMonthly:'monthly',kRate:'rate',kTerm:'term',kIncome:'income',kOtherDebt:'otherDebt',kRegion:'region'};
   for(const id in map){ const el=document.getElementById(id); el.addEventListener('input',()=>{ const v=el.tagName==='SELECT'?el.value:parseFloat(el.value); if(el.tagName!=='SELECT'&&isNaN(v))return; K[map[id]]=v; if(!S.budgetManual){S.budget=Math.round(computeBudget().B*100)/100;} syncControls(); refresh(); }); }
@@ -1014,7 +1026,7 @@ document.getElementById('zAll').addEventListener('click',()=>{zoomTarget={x:0,y:
 document.getElementById('zIn').addEventListener('click',()=>{const T=zoomTarget||{...VB};const cx=T.x+T.w/2,cy=T.y+T.h/2;const w=T.w*0.7,h=w*MH/MW;zoomTarget={x:cx-w/2,y:cy-h/2,w,h};animateZoom();});
 document.getElementById('zOut').addEventListener('click',()=>{const T=zoomTarget||{...VB};const cx=T.x+T.w/2,cy=T.y+T.h/2;const w=Math.min(1600,T.w/0.7),h=w*MH/MW;zoomTarget={x:cx-w/2,y:cy-h/2,w,h};animateZoom();});
 
-bindCalc();
+bindCalc(); bindSS();
 S.budget=Math.round(computeBudget().B*100)/100;
 evalAll();
 parseNL(document.getElementById('nlInput').value);

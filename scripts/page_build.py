@@ -36,6 +36,12 @@ for c in data["complexes"]:
         if best is None or dkm < best[1]: best = (s["n"], dkm)
     if best: c["st"] = [best[0], round(best[1], 2)]
 print("hj matched", n_hit, "/", len(data["complexes"]))
+# schools
+SCH = json.load(open(os.path.join(D, "schools_out.json"))) if os.path.exists(os.path.join(D, "schools_out.json")) else {"ms": [], "assign": {}}
+msmap = {s["id"]: s for s in SCH["ms"]}
+for c in data["complexes"]:
+    a = SCH["assign"].get(c["id"]); c["sch"] = a if a else None
+data["schools"] = [{k: s[k] for k in ("id", "name", "lat", "lng", "A", "E", "avg", "n", "A3", "grade", "pct", "special", "gender", "subj", "addr") if k in s} for s in SCH["ms"]]
 # trim payload
 for c in data["complexes"]:
     for k, z in c["sizes"].items():

@@ -237,7 +237,7 @@ td.r,th.r{text-align:right}
         <div class="f"><label for="cRooms">방 개수</label><select id="cRooms"><option value="4">4개 선호 · 3개 허용</option><option value="4s">4개 필수</option><option value="3">3개 이상</option></select><div class="v">방 수는 면적·준공연도로 추정(84㎡ 2015년 이후 신축은 3~4). 실제 구조는 평면도 확인.</div></div>
         <div class="f"><label for="cCommute">편도 출근 한도 (분)</label><input type="range" id="cCommute" min="15" max="90" step="5" value="60"><div class="v">현재 <b id="cCommuteV" class="num">60</b>분 · 광교역(경기대) 앞, 출근시간대 추정</div></div>
         <div class="f"><label for="cMode">이동 수단</label><select id="cMode"><option value="best">자가용·대중교통 중 빠른 쪽</option><option value="car">자가용</option><option value="transit">대중교통</option></select></div>
-        <div class="f"><label for="cEdu">교육환경 최소 등급 (1~5)</label><input type="range" id="cEdu" min="1" max="5" step="1" value="3"><div class="v">현재 <b id="cEduV">3</b> · 동(洞) 단위 평판·학원가 종합. 미평가 동은 3으로 간주</div></div>
+        <div class="f"><label for="cEdu">교육환경 최소 등급 (1~5)</label><input type="range" id="cEdu" min="1" max="5" step="1" value="3"><div class="v">현재 <b id="cEduV">3</b> · (예측 배정 중학교의 성취도 등급 + 동 학원 접근성) ÷ 2. 학교 자료 없는 단지는 동 평판 사용</div></div>
         <div class="f"><label for="cEduOver">교육 4등급 이상이면 출근 15분 초과 허용</label><input type="checkbox" id="cEduOver" checked></div>
         <div class="f"><label for="cBuilt">준공 연도 이후</label><input type="number" id="cBuilt" step="1" min="1980" max="2026" value="1990"></div>
         <div class="f"><label for="cUnits">최소 세대수</label><input type="number" id="cUnits" step="50" min="0" value="300"></div>
@@ -258,6 +258,7 @@ td.r,th.r{text-align:right}
           <button id="tgBlue" aria-pressed="false">파랑만</button>
           <button id="tgBY" aria-pressed="false">파랑+노랑</button>
           <button id="zGg">광교</button><button id="zYt">영통</button><button id="zSj">수지</button><button id="zDt">동탄</button><button id="zAll">전체보기</button>
+          <button id="tgSch" aria-pressed="true">학교</button>
           <button id="zIn">＋</button><button id="zOut">－</button>
         </div>
         <div id="loadMsg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;z-index:1">지도와 1,300여 개 단지 실거래 데이터를 불러오는 중입니다… (약 4MB, 5~15초)</div>
@@ -265,7 +266,7 @@ td.r,th.r{text-align:right}
         <div id="tip" class="tip" hidden></div>
         <div id="regionCard" class="rcard" hidden></div>
       </div>
-      <div class="maplegend"><span><i style="background:#D4003B"></i>신분당선</span><span><i style="background:#FABE00"></i>수인분당선</span><span><i style="background:#0052A4"></i>1호선·경부선</span><span><i style="background:#9A6292"></i>GTX·SRT</span><span><i style="background:var(--map-hwy);height:4px"></i>고속도로</span><span><i style="background:var(--map-trunk);height:3px"></i>국도·간선</span><span><i style="background:var(--map-road);border:1px solid var(--map-road-case);height:3px"></i>주요도로</span><span><i style="background:var(--card);border:2px solid var(--ink);width:8px;height:8px;border-radius:50%"></i>역</span><span><i style="background:var(--map-water);height:6px"></i>하천·호수</span><span>구·동 경계: 행정안전부 행정동(2026-07) · 도로·철도·수계: OpenStreetMap</span></div>
+      <div class="maplegend"><span><i style="background:#D4003B"></i>신분당선</span><span><i style="background:#FABE00"></i>수인분당선</span><span><i style="background:#0052A4"></i>1호선·경부선</span><span><i style="background:#9A6292"></i>GTX·SRT</span><span><i style="background:var(--map-hwy);height:4px"></i>고속도로</span><span><i style="background:var(--map-trunk);height:3px"></i>국도·간선</span><span><i style="background:var(--map-road);border:1px solid var(--map-road-case);height:3px"></i>주요도로</span><span><i style="background:var(--card);border:2px solid var(--ink);width:8px;height:8px;border-radius:50%"></i>역</span><span>◆ 중학교(색=등급 <i style="background:#1E88E5;width:8px;height:8px"></i>5 <i style="background:#43A047;width:8px;height:8px"></i>4 <i style="background:#FDD835;width:8px;height:8px"></i>3 <i style="background:#FB8C00;width:8px;height:8px"></i>2 <i style="background:#E53935;width:8px;height:8px"></i>1)</span><span><i style="background:var(--map-water);height:6px"></i>하천·호수</span><span>구·동 경계: 행정안전부 행정동(2026-07) · 도로·철도·수계: OpenStreetMap</span></div>
       <p class="small" style="margin-top:6px">휠로 확대, 드래그로 이동. 축소 상태에서 구를 클릭하면 구 요약(시세·판정 분포·동별 표·호재)이 아래에 뜨고, 확대 상태에서 동을 클릭하면 그 동으로 좁혀지며 동 요약이 뜹니다. 마우스를 점에 올리면 단지 특징이 뜹니다. 좌표는 직방 단지정보 기준(동 중심 표기 단지는 점선 테두리 '위치 근사'). 기준가 = 해당 면적의 최근 3개월 실거래 중위값 → 없으면 12개월 중위값 → 마지막 거래 → 네이버 호가 순.</p>
       <div class="card detail" id="detail"><p class="small">지도의 점이나 왼쪽 목록을 클릭하면 실거래 내역, 시세 추이, 전세, 판정 근거, 학교·호재가 나옵니다.</p></div>
     </main>
@@ -452,13 +453,18 @@ function devHtml(list){ if(!list.length) return '<p class="small">이 동은 호
 
 /* ---------------- 데이터 준비 ---------------- */
 const C = DATA.complexes;
-C.forEach(c=>{ const m=metaFor(c); c.m=m; c.reg=!!REG_GU[c.sgg]; c.sizeKeys=Object.keys(c.sizes).map(Number).sort((a,b)=>a-b); });
+const SCHOOL={}; (DATA.schools||[]).forEach(s=>SCHOOL[s.id]=s);
+C.forEach(c=>{ const m=metaFor(c); c.m=m; c.reg=!!REG_GU[c.sgg]; c.sizeKeys=Object.keys(c.sizes).map(Number).sort((a,b)=>a-b);
+  c.ms=((c.sch&&c.sch.ms)||[]).map(([id,d])=>Object.assign({d},SCHOOL[id]||{})).filter(x=>x.name);
+  c.es=(c.sch&&c.sch.es)||null;
+  if(c.ms.length){ const g0=c.ms[0].grade; const rest=c.ms.slice(1).map(x=>x.grade); c.schGrade=Math.round((rest.length?0.6*g0+0.4*(rest.reduce((a,b)=>a+b,0)/rest.length):g0)*10)/10; } else c.schGrade=null; });
+const GRADE_TXT={5:'최상위(상위 15%)',4:'상위(상위 40%)',3:'중위',2:'하위',1:'최하위(하위 10%)'};
 document.getElementById('hdrN').textContent=C.length.toLocaleString();
 const fmtEok=(man)=>man==null?'-':(man/10000).toFixed(man>=100000?1:2)+'억';
 const fmtYM=(ym)=>ym?ym.slice(0,4)+'.'+ym.slice(4):'';
 
 /* ---------------- STATE ---------------- */
-const S = {region:null,hj:new Set(),budget:7.0,budgetManual:false,size:84,rooms:'4',commute:60,mode:'best',edu:3,eduOver:true,builtMin:1990,unitsMin:300,tradeOnly:true,noReg:false,include:[],exclude:[],filter:'all',selected:null,selSize:{},listLimit:60};
+const S = {showSch:true,region:null,hj:new Set(),budget:7.0,budgetManual:false,size:84,rooms:'4',commute:60,mode:'best',edu:3,eduOver:true,builtMin:1990,unitsMin:300,tradeOnly:true,noReg:false,include:[],exclude:[],filter:'all',selected:null,selSize:{},listLimit:60};
 const K = {seoulPrice:7.4,seoulJeonse:4.5,seoulAcq:5.0,seoulYears:8,seoulTaxMode:'exempt',ptPrice:3.9,ptLoan:1.7,moving:0.2,reserve:0.3,extra:0,monthly:100,rate:4.4,term:30,income:7000,otherDebt:0,region:'reg'};
 
 /* ---------------- FINANCE ---------------- */
@@ -496,7 +502,8 @@ function askPrice(c,area){ if(!c.ask||!c.ask.dealMin) return null; return {p:c.a
 function inRegion(c){ return !S.hj.size || S.hj.has(c.hjcd); }
 function regionTitle(){ if(!S.hj.size) return ''; if(S.region&&S.region.kind==='gu') return S.region.key; const names=[...S.hj].map(cd=>{const b=DONGS.find(x=>x.cd===cd); return b?b.nm:'';}).filter(Boolean); return names.length<=3?names.join('·'):names.slice(0,3).join('·')+` 외 ${names.length-3}개 동`; }
 function commuteMin(c){ return S.mode==='car'?c.m.car:(S.mode==='transit'?c.m.transit:Math.min(c.m.car,c.m.transit)); }
-function eduScore(c){ return Math.round((c.m.rep+c.m.acad)/2*10)/10; }
+function eduScore(c){ const rep=c.schGrade!=null?c.schGrade:c.m.rep; return Math.round((rep+c.m.acad)/2*10)/10; }
+function schoolLine(c){ if(!c.ms.length) return '중학교 예측 불가(반경 4km 내 자료 없음)'; const f=c.ms[0]; return `예측 배정 ${f.name} ${f.d}m · 등급 ${f.grade}/5 (국영수 A ${f.A}%)${c.ms.length>1?` · 후보 ${c.ms.slice(1).map(x=>x.name.replace('학교','')+' '+x.grade).join(', ')}`:''}`; }
 function matchRegion(c,list){ return list.some(x=>x&&(c.dong.includes(x)||c.sgg.includes(x)||c.m.area.includes(x)||c.name.includes(x)||(c.hj&&c.hj.includes(x))||(c.sggnm&&c.sggnm.replace(/\s/g,'').includes(x.replace(/\s/g,''))))); }
 function evaluate(c){
   const out=[]; let worst=0; const push=(l,t)=>{out.push({lvl:l,txt:t}); worst=Math.max(worst,l);};
@@ -533,9 +540,9 @@ function evaluate(c){
   else if(cm<=S.commute+15) push(1,`출근 ${cm}분, 한도를 ${cm-S.commute}분 초과`);
   else push(2,`출근 ${cm}분, 한도 크게 초과`);
   // education
-  if(es>=S.edu) push(0,`교육환경 ${es}등급 ≥ ${S.edu} · ${c.m.mid}${c.m.known?'':' (미평가 동)'}`);
-  else if(es>=S.edu-1) push(1,`교육환경 ${es}등급, 요구보다 한 단계 낮음`);
-  else push(2,`교육환경 ${es}등급, 요구 미달`);
+  if(es>=S.edu) push(0,`교육환경 ${es}등급 ≥ ${S.edu} · ${schoolLine(c)} · 학원 ${c.m.acad}/5`);
+  else if(es>=S.edu-1) push(1,`교육환경 ${es}등급, 요구보다 한 단계 낮음 · ${schoolLine(c)}`);
+  else push(2,`교육환경 ${es}등급, 요구 미달 · ${schoolLine(c)}`);
   if(c.reg) push(0,'규제지역: 토지거래허가 + 6개월 내 전입·2년 실거주(실거주 목적이라 결격 아님), LTV 40%');
   if(c.approx) push(1,'지도 위치가 동 중심으로 표기됨(정확 좌표 미확인)');
   const status=['blue','yellow','red'][worst];
@@ -601,6 +608,9 @@ function drawDynamic(){
   if(scale<0.7){ const seen=new Set(); MAPDATA.roads.filter(r=>r.n&&(r.c==='motorway'||(r.c==='trunk'&&scale<0.45)||(r.c==='primary'&&scale<0.25))&&r.p.length>=2).forEach(r=>{ const mid=r.p[Math.floor(r.p.length/2)]; const X=px(mid[0]),Y=py(mid[1]); if(!inView(X,Y,-10)) return; if(/터널|교$|IC|JC|램프|분기점|나들목|진출|진입|연결/.test(r.n)) return; const key=r.n+'|'+Math.round(X/(420*scale))+'|'+Math.round(Y/(420*scale)); if(seen.has(key)||seen.size>14) return; seen.add(key); s+=`<text class="rlbl" x="${X}" y="${Y-3*scale}" text-anchor="middle" font-size="${(9*Math.max(0.5,scale)*1.5).toFixed(1)}">${r.n}</text>`; }); }
   // stations: always visible
   { const k=Math.max(0.45,Math.min(1.2,scale)); MAPDATA.stations.forEach(st=>{ const X=px(st.x), Y=py(st.y); if(!inView(X,Y)) return; const r=(4.6*k).toFixed(2); s+=`<g class="stn"><circle cx="${X}" cy="${Y}" r="${r}" fill="var(--card)" stroke="var(--ink)" stroke-width="${(2*k).toFixed(2)}"/>${scale<0.9?`<text x="${X+ +r+3}" y="${Y+4*k}" font-size="${(10*k*1.35).toFixed(1)}" font-weight="700">${st.n}</text>`:''}</g>`; }); }
+  // 중학교 (등급 색)
+  if(S.showSch && scale<0.75){ const GC={5:'#1E88E5',4:'#43A047',3:'#FDD835',2:'#FB8C00',1:'#E53935'}; const k=Math.max(0.5,Math.min(1.1,scale));
+    (DATA.schools||[]).forEach(m=>{ const X=px(m.lng),Y=py(m.lat); if(!inView(X,Y)) return; const r=(6*k).toFixed(1); s+=`<g class="sch"><path d="M${X} ${Y-r} L${X+ +r} ${Y} L${X} ${Y+ +r} L${X-r} ${Y} Z" fill="${GC[m.grade]}" stroke="var(--card)" stroke-width="1.2"><title>${m.name} · 등급 ${m.grade}/5 · A ${m.A}%</title></path>${scale<0.4?`<text class="dlbl" x="${X+ +r+2}" y="${Y+3*k}" font-size="${(9.5*k*1.3).toFixed(1)}" style="opacity:.9">${m.name.replace('학교','')} ${m.grade}</text>`:''}</g>`; }); }
   // 직장
   const WX=px(WORK.lng), WY=py(WORK.lat); const ws=Math.max(0.35,Math.min(1,scale));
   s+=`<g><rect x="${WX-9*ws}" y="${WY-9*ws}" width="${18*ws}" height="${18*ws}" rx="3" fill="var(--ink)"/><text x="${WX}" y="${WY+4*ws}" text-anchor="middle" font-size="${(10*ws).toFixed(1)}" style="fill:var(--card);font-weight:700">직</text><text class="dlbl" x="${WX-12*ws}" y="${WY-13*ws}" text-anchor="end" font-size="${(11*ws).toFixed(1)}">직장 · 광교역 앞</text></g>`;
@@ -633,7 +643,9 @@ function traits(c,e){
   if(c.st){ const m=Math.round(c.st[1]*1000); t.push(m<=800?`${c.st[0]} ${m}m 역세권(도보 ${Math.max(1,Math.round(m/70))}분)`:m<=1500?`${c.st[0]} ${(m/1000).toFixed(1)}km`:`가까운 역 ${(m/1000).toFixed(1)}km(역 원거리)`); }
   if(e.sz){ t.push(`${e.sz.area}㎡ 방 ${e.rm.txt}`); if(e.sz.n12) t.push(`12개월 거래 ${e.sz.n12}건${e.sz.jmed12&&e.rp?` · 전세가율 ${Math.round(e.sz.jmed12/e.rp.p*100)}%`:''}`); }
   t.push(`출근 자가용 ${c.m.car}분 · 대중교통 ${c.m.transit}분`);
-  t.push(`교육 ${e.es}등급${c.m.acad>=4?' · 학원가 접근 좋음':''}${c.m.known?'':' (미평가 동)'}`);
+  if(c.es) t.push(`예측 초등 ${c.es[0]} ${c.es[1]}m`);
+  if(c.ms.length) t.push(`예측 중학 ${c.ms[0].name} ${c.ms[0].d}m · 학교등급 ${c.ms[0].grade}/5`);
+  t.push(`교육 ${e.es}등급${c.m.acad>=4?' · 학원가 접근 좋음':''}`);
   t.push(c.reg?'규제지역(토허구역)':'비규제지역');
   if(c.ask&&c.ask.dealCnt) t.push(`네이버 매물 ${c.ask.dealCnt}건`);
   if(c.rh) t.push('연립다세대(현 거주)');
@@ -690,7 +702,8 @@ function renderRegion(){
   const st=regionStats(list); const B=S.budget*10000;
   const pct=(v)=>Math.round(v/st.n*100);
   const areas=[...new Set(list.map(c=>c.m.area))]; const devs=[]; areas.forEach(a=>devFor(a).forEach(x=>{ if(!devs.some(y=>y.t===x.t)) devs.push(x); }));
-  const schools=[...new Set(list.filter(c=>c.m.known).map(c=>c.m.mid))];
+  const schMap={}; list.forEach(c=>c.ms.forEach((m,i)=>{ const o=schMap[m.id]||(schMap[m.id]={m,n:0,first:0}); o.n++; if(i===0) o.first++; })); const schoolsArr=Object.values(schMap).sort((a,b)=>b.first-a.first||b.m.grade-a.m.grade);
+  const schools=schoolsArr.map(o=>`${o.m.name.replace('학교','')} <b>${o.m.grade}</b>${o.first?`(1순위 ${o.first}단지)`:''}`);
   const top=[...list].sort((a,b)=>EV[a.id].worst-EV[b.id].worst||EV[b.id].score-EV[a.id].score).slice(0,10);
   const row=(c)=>{const e=EV[c.id]; return `<tr data-id="${c.id}"><td><span class="st st-${e.status}" style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px"></span>${c.name}<div class="small">${c.hj||c.dong} · ${c.built||'?'}년 · ${c.units?c.units.toLocaleString()+'세대':''}</div></td><td class="num r">${e.rp?fmtEok(e.rp.p):'-'}<div class="small">${e.sz?e.sz.area+'㎡':''}</div></td><td class="num r">${c.m.car}/${c.m.transit}</td><td class="num r">${e.es}</td></tr>`;};
   let dongTbl='';
@@ -718,7 +731,7 @@ function renderRegion(){
     <dl class="kv">
      <dt>광교역 출근 평균</dt><dd>자가용 ${st.car}분 · 대중교통 ${st.transit}분</dd>
      <dt>교육환경 평균</dt><dd>${st.edu}등급 (1~5)</dd>
-     <dt>배정 후보 중학교</dt><dd>${schools.length?schools.join(' / '):'평가표에 없는 동(학구도 확인)'}<div class="small">배정 단정 금지. 2029·2032학년도 규정 확인.</div></dd>
+     <dt>배정 예측 중학교·등급</dt><dd>${schools.length?schools.join(' · '):'자료 없음'}<div class="small">숫자 = 학교 등급(1~5, 성취도 백분위). 근거리 기준 예측, 배정 단정 금지.</div></dd>
     </dl>
    </div>
    <div>
@@ -814,11 +827,15 @@ function renderDetail(){
     ${tradesTbl}
     <h3 style="margin-top:10px">전세 실거래 (최근 10건)</h3>
     ${rentsTbl}
-    <h3 style="margin-top:10px">교육환경 <span class="small">${c.m.known?'분석가 평가표':'미평가 동(기본값)'}</span></h3>
-    <dl class="kv">
-     <dt>배정 후보 중학교</dt><dd>${c.m.mid}<div class="small">배정 단정 금지. 첫째 2029년·둘째 2032년 입학 기준 규정을 교육지원청·학구도에서 확인.</div></dd>
-     <dt>평판 / 학원</dt><dd>${'●'.repeat(c.m.rep)}${'○'.repeat(5-c.m.rep)} ${c.m.rep}/5 · ${'●'.repeat(c.m.acad)}${'○'.repeat(5-c.m.acad)} ${c.m.acad}/5</dd>
-     <dt>확인 가능 자료</dt><dd>${c.m.data}</dd>
+    <h3 style="margin-top:10px">배정 예측 학교 <span class="small">근거리 기준 예측 · 학교알리미 성취도(아파트미 집계)</span></h3>
+    ${c.es?`<div class="small" style="margin:2px 0 6px">초등학교(예측): <b>${c.es[0]}</b> 직선 ${c.es[1]}m · 초등은 성취도 공시가 없어 등급 없음</div>`:'<div class="small">초등학교 예측 불가(반경 2.5km 내 자료 없음)</div>'}
+    ${c.ms.length?`<div class="tbl"><table class="num"><tr><th>중학교</th><th class="r">거리</th><th class="r">등급</th><th class="r">A비율</th><th class="r">E비율</th><th class="r">평균</th><th class="r">응시</th><th class="r">특목·자사</th></tr>${c.ms.map((m,i)=>`<tr><td>${i===0?'<b>':''}${m.name}${m.gender?` <span class="small">(${m.gender})</span>`:''}${i===0?'</b> <span class="badge blue" style="font-size:10px">1순위</span>':''}<div class="small">${m.addr||''}</div></td><td class="r">${m.d}m</td><td class="r"><b>${m.grade}</b>/5<div class="small">${GRADE_TXT[m.grade]}</div></td><td class="r">${m.A}%</td><td class="r">${m.E}%</td><td class="r">${m.avg}</td><td class="r">${m.n||'-'}</td><td class="r">${m.special!=null?m.special+'%':'-'}</td></tr>`).join('')}</table></div>
+    <div class="small" style="margin-top:4px">A비율 = 2025학년도 1학기 2학년 국·영·수 A등급 비율 평균(없으면 2024 3학년 2학기). E비율 = 최하 성취수준 비율(낮을수록 면학 분위기 양호). 등급 = 경기 남부 ${(DATA.schools||[]).length}개교 중 백분위(A − 0.5×E 지수). 특목·자사 = 2025년 졸업생 중 과학고·영재고·국제고·외고·자사고 진학 비율.</div>`:'<div class="small">반경 4km 내 성취도 자료가 있는 중학교가 없습니다.</div>'}
+    <div class="callout warn" style="margin-top:8px;font-size:12px"><b>배정 방식 주의.</b> ${c.sgg.startsWith('수원')?'수원은 중학군 안에서 근거리·추첨을 함께 쓰고 2027학년도부터 학군을 개편합니다(광교중학군은 2028 이의8중 개교 후 재점검).':c.sgg.startsWith('용인')?'용인은 학구(근거리) 배정이 기본이나 과밀 학교는 인접 학교로 조정될 수 있습니다.':c.sgg.startsWith('화성')?'화성 동탄은 신설학교 개교에 따라 학구가 자주 바뀌고, 고교는 비평준화입니다.':'관할 교육지원청 배정 규정을 확인하세요.'} 첫째 2029년·둘째 2032년 입학 기준 학구도(schoolzone.emac.kr)와 교육지원청 공고로 확정하세요.</div>
+    <dl class="kv" style="margin-top:8px">
+     <dt>동 평판(분석가)</dt><dd>${c.m.known?`${'●'.repeat(c.m.rep)}${'○'.repeat(5-c.m.rep)} ${c.m.rep}/5 · ${c.m.mid}`:'미평가 동'}</dd>
+     <dt>학원 접근성</dt><dd>${'●'.repeat(c.m.acad)}${'○'.repeat(5-c.m.acad)} ${c.m.acad}/5</dd>
+     <dt>교육환경 종합</dt><dd><b>${e.es}</b>/5 = (${c.schGrade!=null?'학교등급 '+c.schGrade+'(자료)':'동 평판 '+c.m.rep} + 학원 ${c.m.acad}) ÷ 2</dd>
      <dt>고교</dt><dd>${c.m.high}</dd>
     </dl>
     <h3 style="margin-top:10px">호재 · 리스크 <span class="small">${c.m.area}</span></h3>
@@ -989,6 +1006,7 @@ function renderFacts(){
    <li><b>국토교통부 실거래가 공개시스템(rt.molit.go.kr)</b>: 아파트 매매 2024-10-01~2026-09-25, 전월세 2025-10-01~2026-09-25. 수원 영통·장안·권선·팔달구, 용인 수지·기흥구, 화성 동탄구·병점구, 오산시, 평택시, 서울 동작구. 계약일 기준, 해제 신고 건 제외, 전세만 사용(월세 제외). 단지별로 최근 30건(매매)·10건(전세)만 페이지에 담았고 월별 중위값은 전체 거래로 계산.</li>
    <li><b>직방 단지 검색 API</b>: 단지 좌표·세대수·사용승인일·직방 단지 ID. 실거래 단지명과 이름 유사도로 매칭(동 일치 조건). 매칭 실패 단지는 동 중심 좌표로 표기하고 '위치 근사'로 표시.</li>
    <li><b>네이버 부동산(모바일)</b>: 동별 단지 목록·매물 수·매매/전세 호가 범위. 수집 도중 네이버가 과다요청으로 차단해 일부 동만 수집됨(호가 있는 단지 ${ask}개). 없는 단지는 상세의 네이버 링크로 확인.</li>
+   <li><b>학교</b>: 위치는 OpenStreetMap(초 333·중 167) + 아파트미 중학교 좌표. 중학교 성취도는 학교알리미 '교과별 학업성취사항'을 아파트미(apt2.me)가 집계한 값(2025학년도 1학기 2학년 국·영·수 A~E 비율, 보조로 2024 3학년 2학기), 특목·자사고 진학률은 아파트미 진학현황(2025 졸업생). 등급은 경기 남부 ${(DATA.schools||[]).length}개교 백분위(A비율 − 0.5×E비율)로 5(상위 15%)~1(하위 10%). 배정 예측은 직선거리 근거리 기준(같은 시 우선, 4km 내 3개 후보)이며 실제 학구·추첨과 다를 수 있음.</li>
    <li>수집 결과: 단지 ${n.toLocaleString()}개, 매매 실거래 ${nt.toLocaleString()}건(페이지 내장분), 위치 근사 ${ap}개. 화성시는 2026년 일반구 신설로 동탄구·병점구 코드로 수집(효행구·만세구는 제외).</li>
   </ul></section>
   <section><h2>규제·세금·금리 사실 <span class="tag fact">사실</span></h2><ul>
@@ -1026,6 +1044,7 @@ document.getElementById('tgAll').addEventListener('click',()=>setFilter('all'));
 document.getElementById('tgBlue').addEventListener('click',()=>setFilter('blue'));
 document.getElementById('tgBY').addEventListener('click',()=>setFilter('by'));
 function setFilter(f){S.filter=f;S.listLimit=60;['tgAll','tgBlue','tgBY'].forEach(id=>document.getElementById(id).setAttribute('aria-pressed',(f==='all'&&id==='tgAll')||(f==='blue'&&id==='tgBlue')||(f==='by'&&id==='tgBY')));drawMarkers();renderList();}
+document.getElementById('tgSch').addEventListener('click',e=>{S.showSch=!S.showSch;e.currentTarget.setAttribute('aria-pressed',S.showSch);drawDynamic();});
 document.getElementById('zGg').addEventListener('click',()=>zoomTo(37.292,127.052,220));
 document.getElementById('zYt').addEventListener('click',()=>zoomTo(37.252,127.065,220));
 document.getElementById('zSj').addEventListener('click',()=>zoomTo(37.315,127.085,260));

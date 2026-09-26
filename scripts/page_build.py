@@ -55,7 +55,9 @@ open(os.path.join(WS, "data.js"), "w").write(js)
 md = open(os.path.join(D, "map", "mapdata.js")).read()
 open(os.path.join(WS, "mapdata.js"), "w").write(md)
 t = open(os.path.join(D, "template_v2.html"), encoding="utf-8").read()
-out = t
+import time
+BUILD_TAG = time.strftime("%Y%m%d%H%M")
+out = t.replace('src="data.js"', f'src="data.js?v={BUILD_TAG}"').replace('src="mapdata.js"', f'src="mapdata.js?v={BUILD_TAG}"')
 dest = os.path.join(WS, "gwanggyo-home-finder.html")
 open(dest, "w", encoding="utf-8").write(out)
 m = re.search(r"<script>(.*)</script>", out, re.S); open("/tmp/_chk2.js", "w").write(js + "\n" + md + "\n" + m.group(1))

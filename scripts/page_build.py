@@ -39,8 +39,8 @@ print("hj matched", n_hit, "/", len(data["complexes"]))
 # trim payload
 for c in data["complexes"]:
     for k, z in c["sizes"].items():
-        z["trades"] = z["trades"][:20]; z["rents"] = z["rents"][:6]
-    for key in ("nname",):
+        z["trades"] = z["trades"][:12]; z["rents"] = z["rents"][:4]
+    for key in ("nname","road"):
         c.pop(key, None)
 js = "const DATA=" + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";"
 WS = "/Users/sam/Library/Application Support/Claude/scratch-workspaces/90c0a10e-dd5a-46a9-b2e4-6d5637301d7d/5aaa6540-cfa6-4307-864a-a35ab6b571f8/scratch-2026-09-25-39bc00"

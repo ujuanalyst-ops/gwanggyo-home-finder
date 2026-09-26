@@ -325,8 +325,8 @@ td.r,th.r{text-align:right}
 <div class="foot">의사결정 보조 도구입니다. 실거래는 국토교통부 실거래가 공개시스템(계약일 기준, 해제 건 제외), 단지 좌표·세대수·사용승인은 직방 단지정보, 호가는 네이버 부동산 모바일에서 2026-09-25에 수집했으며 이후 변동은 반영되지 않습니다. 계약 전 원본과 학교알리미·학구도·교육지원청·은행·세무사 확인을 거치세요. 투자 자문이 아닙니다.</div>
 </div>
 
-<script defer src="data.js?v=202609261337"></script>
-<script defer src="mapdata.js?v=202609261337"></script>
+<script defer src="data.js?v=202609261340"></script>
+<script defer src="mapdata.js?v=202609261340"></script>
 <script>
 document.addEventListener('DOMContentLoaded',function(){
 if(typeof DATA==='undefined'||typeof MAPDATA==='undefined'){ document.getElementById('hdrN').textContent='데이터 로드 실패'; document.getElementById('loadMsg').textContent='데이터 파일(data.js, mapdata.js)을 불러오지 못했습니다. 새로고침해 주세요.'; return; }
@@ -566,7 +566,9 @@ DONGS.forEach(b=>{ const xs=[],ys=[]; b.polys.forEach(pl=>pl.forEach(p=>{xs.push
 let zoomTarget=null, zoomRaf=0, dynTimer=0;
 function applyVB(){ document.getElementById('map').setAttribute('viewBox',`${VB.x} ${VB.y} ${VB.w} ${VB.h}`); }
 function scheduleDynamic(ms=90){ clearTimeout(dynTimer); dynTimer=setTimeout(()=>{drawDynamic();},ms); }
-function animateZoom(){ if(zoomRaf) return; const step=()=>{ const T=zoomTarget; if(!T){zoomRaf=0;return;} const k=0.28; VB.x+=(T.x-VB.x)*k; VB.y+=(T.y-VB.y)*k; VB.w+=(T.w-VB.w)*k; VB.h+=(T.h-VB.h)*k; if(Math.abs(T.w-VB.w)<0.15&&Math.abs(T.x-VB.x)<0.15&&Math.abs(T.y-VB.y)<0.15){ Object.assign(VB,T); zoomTarget=null; applyVB(); zoomRaf=0; scheduleDynamic(40); return; } applyVB(); zoomRaf=requestAnimationFrame(step); }; zoomRaf=requestAnimationFrame(step); }
+const nextFrame=(fn)=>document.hidden?setTimeout(fn,16):requestAnimationFrame(fn);
+function animateZoom(){ if(zoomRaf) return; if(document.hidden&&zoomTarget){ Object.assign(VB,zoomTarget); zoomTarget=null; applyVB(); scheduleDynamic(10); return; } const step=()=>{ const T=zoomTarget; if(!T){zoomRaf=0;return;} const k=0.28; VB.x+=(T.x-VB.x)*k; VB.y+=(T.y-VB.y)*k; VB.w+=(T.w-VB.w)*k; VB.h+=(T.h-VB.h)*k; if(Math.abs(T.w-VB.w)<0.15&&Math.abs(T.x-VB.x)<0.15&&Math.abs(T.y-VB.y)<0.15){ Object.assign(VB,T); zoomTarget=null; applyVB(); zoomRaf=0; scheduleDynamic(40); return; } applyVB(); zoomRaf=nextFrame(step); }; zoomRaf=nextFrame(step); }
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&zoomTarget){ zoomRaf=0; animateZoom(); } });
 function setVB(){ zoomTarget=null; applyVB(); drawDynamic(); }
 function zoomTo(lat,lng,w){ const h=w*MH/MW; zoomTarget={x:px(lng)-w/2,y:py(lat)-h/2,w,h}; animateZoom(); }
 function zoomBB(bb,pad=1.25){ const x0=px(bb[0]),x1=px(bb[2]),y0=py(bb[3]),y1=py(bb[1]); const w=Math.max((x1-x0)*pad,(y1-y0)*pad*MW/MH,50); zoomTo((bb[1]+bb[3])/2,(bb[0]+bb[2])/2,w); }

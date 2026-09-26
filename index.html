@@ -1062,6 +1062,7 @@ drawMap(); renderFacts(); refresh(); bindSS(); document.getElementById('gotoMap'
 try{const t=localStorage.getItem('gh_tab'); if(t&&document.querySelector(`.tabs button[data-tab="${t}"]`)) document.querySelector(`.tabs button[data-tab="${t}"]`).click();}catch(e){}
 
 document.getElementById('loadMsg').remove();
+window.APP={get C(){return C;},get EV(){return EV;},S,K,select,selectGu,zoomTo,showRegion,refresh,DATA};
 });
 </script>
 

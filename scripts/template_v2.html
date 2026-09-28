@@ -162,6 +162,15 @@ td.r,th.r{text-align:right}
 .stn text{fill:var(--ink);opacity:.85;paint-order:stroke;stroke:var(--map-land);stroke-width:3px}
 .rd{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
 .tree{margin-bottom:12px}
+.srch{margin-bottom:12px;position:relative}
+.srch .srow{display:flex;gap:6px;margin-top:6px}
+.srch input{flex:1;min-width:0}
+.sug{position:absolute;left:14px;right:14px;top:100%;margin-top:-6px;z-index:30;background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);max-height:320px;overflow:auto}
+.sug div{padding:7px 10px;cursor:pointer;border-bottom:1px solid var(--line2);font-size:13px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.sug div:last-child{border-bottom:0}
+.sug div:hover,.sug div.act{background:var(--line2)}
+.sug .m{color:var(--muted);font-size:11px;white-space:nowrap}
+.sug mark{background:transparent;color:var(--blue);font-weight:700}
 .tree .gu{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--line2);cursor:pointer;font-weight:600}
 .tree .gu .cnt{margin-left:auto;font-size:11px;color:var(--muted);font-weight:400;white-space:nowrap}
 .tree .gu .tg{width:18px;text-align:center;color:var(--muted)}
@@ -222,6 +231,12 @@ td.r,th.r{text-align:right}
 
   <div class="grid">
     <aside>
+      <div class="card srch">
+        <label for="aptSearch" style="font-weight:600">아파트 검색</label>
+        <div class="srow"><input type="search" id="aptSearch" placeholder="단지명·동 이름 (예: 황골, 자연앤, 영통동)" autocomplete="off"><button class="btn" id="aptSearchClear" title="지우기">×</button></div>
+        <div id="aptSuggest" class="sug" hidden></div>
+        <div class="small" style="margin-top:4px">고르면 지도가 그 단지로 이동하고 상세·네이버 옆창이 열립니다. Enter = 첫 후보 선택.</div>
+      </div>
       <div class="card tree" id="tree"></div>
       <div class="card cond">
         <h3 style="margin-bottom:6px">조건값</h3>
@@ -1032,6 +1047,23 @@ function renderFacts(){
   <section><h2>출처 링크</h2><ul class="small"><li>rt.molit.go.kr · apis.zigbang.com · m.land.naver.com · hogangnono.com · kbland.kr</li><li>10·15 대책: korea.kr, kbthink.com, fsc.go.kr · 양도세 중과 유예 종료: korea.kr(2026-05) · 금리: 헤럴드경제·뉴스핌(2026-08), KB주택시장리뷰 2026-09</li><li>학군: 수원교육지원청 goesw.kr, 중학군 개편 보도(2025-12), allinfo.today(2024 특목고 진학), 아파트미 중학교 성취도</li></ul></section>`;
 }
 
+/* ---------------- 아파트 검색 ---------------- */
+const norm=(t)=>String(t||'').toLowerCase().replace(/[\s·\-()（）]/g,'');
+function searchApts(q){ const nq=norm(q); if(nq.length<1) return []; const out=[];
+  for(const c of C){ const nn=norm(c.name); let sc=-1; if(nn.startsWith(nq)) sc=3; else if(nn.includes(nq)) sc=2; else if(norm(c.hj).includes(nq)||norm(c.dong).includes(nq)||norm(c.sggnm).includes(nq)) sc=1; if(sc<0) continue; out.push({c,sc}); }
+  out.sort((a,b)=>b.sc-a.sc||(EV[a.c.id].worst-EV[b.c.id].worst)||(EV[b.c.id].score-EV[a.c.id].score)); return out.slice(0,25).map(x=>x.c); }
+function hl(name,q){ const i=name.toLowerCase().indexOf(q.toLowerCase()); if(i<0||!q) return name; return name.slice(0,i)+'<mark>'+name.slice(i,i+q.length)+'</mark>'+name.slice(i+q.length); }
+function goApt(c){ S.hj.clear(); S.region=null; document.getElementById('regionCard').hidden=true; select(c.id); zoomTo(c.lat,c.lng,110); keepMapInView(); }
+(function(){ const inp=document.getElementById('aptSearch'), box=document.getElementById('aptSuggest'), clr=document.getElementById('aptSearchClear'); let cur=[],act=-1;
+  const render=()=>{ const q=inp.value.trim(); cur=searchApts(q); act=-1; if(!q||!cur.length){ box.hidden=!q; box.innerHTML=q?'<div class="small">일치하는 단지가 없습니다.</div>':''; return; }
+    box.hidden=false; box.innerHTML=cur.map((c,i)=>{const e=EV[c.id]; return `<div data-i="${i}"><span><span class="st st-${e.status}" style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px"></span>${hl(c.name,q)}</span><span class="m">${(c.sggnm||c.sgg).replace(/수원시 |용인시 |화성시 /,'')} ${c.hj||c.dong} · ${e.rp?fmtEok(e.rp.p):'-'}</span></div>`;}).join('');
+    box.querySelectorAll('div[data-i]').forEach(el=>el.addEventListener('mousedown',ev=>{ev.preventDefault(); pick(+el.dataset.i);})); };
+  const pick=(i)=>{ const c=cur[i]; if(!c) return; inp.value=c.name; box.hidden=true; goApt(c); };
+  inp.addEventListener('input',render); inp.addEventListener('focus',()=>{ if(inp.value.trim()) render(); });
+  inp.addEventListener('keydown',ev=>{ if(ev.key==='ArrowDown'){ act=Math.min(cur.length-1,act+1); } else if(ev.key==='ArrowUp'){ act=Math.max(0,act-1); } else if(ev.key==='Enter'){ ev.preventDefault(); pick(act>=0?act:0); return; } else if(ev.key==='Escape'){ box.hidden=true; return; } else return; ev.preventDefault(); box.querySelectorAll('div[data-i]').forEach((el,i)=>el.classList.toggle('act',i===act)); const a=box.querySelector('div.act'); if(a) a.scrollIntoView({block:'nearest'}); });
+  inp.addEventListener('blur',()=>setTimeout(()=>{box.hidden=true;},150));
+  clr.addEventListener('click',()=>{ inp.value=''; box.hidden=true; inp.focus(); });
+})();
 /* ---------------- WIRING ---------------- */
 function refresh(){ evalAll(); drawMarkers(); renderTree(); renderList(); if(S.selected||S.region) renderDetail(); renderCalc(); renderReport(); }
 function bindSS(){ const boxes=[...document.querySelectorAll('.ssc')]; const sel=document.getElementById('kSeoulTaxMode'); const upd=()=>{ const ok=boxes.every(b=>b.checked); const n=boxes.filter(b=>!b.checked).length; if(ok){ if(K.seoulTaxMode==='normal'){K.seoulTaxMode='exempt'; sel.value='exempt';} } else if(K.seoulTaxMode==='exempt'){ K.seoulTaxMode='normal'; sel.value='normal'; } const sw=(m)=>{const s0=K.seoulTaxMode;K.seoulTaxMode=m;const v=seoulCapGain();K.seoulTaxMode=s0;return v;}; document.getElementById('ssNote').innerHTML= ok?`요건 충족 가정 → 사당 양도세 <b>0원</b> (일반과세였다면 약 ${fmt(sw('normal'),2)}억, 2주택 중과였다면 약 ${fmt(sw('heavy'),2)}억). 계약서·임대 기간·인상률 증빙을 세무사와 확인하세요.`:`${n}개 요건 미충족 → 일반과세로 계산(약 ${fmt(sw('normal'),2)}억). 특히 "1세대 1주택" 요건은 <b>평택을 먼저 매도</b>하면 충족됩니다.`; if(!S.budgetManual){S.budget=Math.round(computeBudget().B*100)/100;} syncControls(); refresh(); }; boxes.forEach(b=>b.addEventListener('change',upd)); sel.addEventListener('change',()=>{ if(sel.value!=='exempt'){ /* manual override keeps */ } }); upd(); }

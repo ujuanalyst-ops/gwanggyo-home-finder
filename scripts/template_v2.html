@@ -252,6 +252,7 @@ td.r,th.r{text-align:right}
           <button id="tgBY" aria-pressed="false">파랑+노랑</button>
           <button id="zGg">광교</button><button id="zYt">영통</button><button id="zSj">수지</button><button id="zDt">동탄</button><button id="zAll">전체보기</button>
           <button id="tgSch" aria-pressed="true">학교</button>
+          <button id="tgNaver" aria-pressed="true" title="아파트를 클릭하면 오른쪽에 네이버 부동산 창을 띄웁니다">네이버 옆창</button>
           <button id="zIn">＋</button><button id="zOut">－</button>
         </div>
         <div id="loadMsg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;z-index:1">지도와 1,300여 개 단지 실거래 데이터를 불러오는 중입니다… (약 4MB, 5~15초)</div>
@@ -259,8 +260,9 @@ td.r,th.r{text-align:right}
         <div id="tip" class="tip" hidden></div>
         <div id="regionCard" class="rcard" hidden></div>
       </div>
+      <div id="naverHint" class="callout warn small" hidden></div>
       <div class="maplegend"><span><i style="background:#D4003B"></i>신분당선</span><span><i style="background:#FABE00"></i>수인분당선</span><span><i style="background:#0052A4"></i>1호선·경부선</span><span><i style="background:#9A6292"></i>GTX·SRT</span><span><i style="background:var(--map-hwy);height:4px"></i>고속도로</span><span><i style="background:var(--map-trunk);height:3px"></i>국도·간선</span><span><i style="background:var(--map-road);border:1px solid var(--map-road-case);height:3px"></i>주요도로</span><span><i style="background:var(--card);border:2px solid var(--ink);width:8px;height:8px;border-radius:50%"></i>역</span><span>◆ 중학교(색=등급 <i style="background:#1E88E5;width:8px;height:8px"></i>5 <i style="background:#43A047;width:8px;height:8px"></i>4 <i style="background:#FDD835;width:8px;height:8px"></i>3 <i style="background:#FB8C00;width:8px;height:8px"></i>2 <i style="background:#E53935;width:8px;height:8px"></i>1)</span><span><i style="background:var(--map-water);height:6px"></i>하천·호수</span><span>구·동 경계: 행정안전부 행정동(2026-07) · 도로·철도·수계: OpenStreetMap</span></div>
-      <p class="small" style="margin-top:6px">휠로 확대, 드래그로 이동. 축소 상태에서 구를 클릭하면 구 요약(시세·판정 분포·동별 표·호재)이 아래에 뜨고, 확대 상태에서 동을 클릭하면 그 동으로 좁혀지며 동 요약이 뜹니다. 마우스를 점에 올리면 단지 특징이 뜹니다. 좌표는 직방 단지정보 기준(동 중심 표기 단지는 점선 테두리 '위치 근사'). 기준가 = 해당 면적의 최근 3개월 실거래 중위값 → 없으면 12개월 중위값 → 마지막 거래 → 네이버 호가 순.</p>
+      <p class="small" style="margin-top:6px">휠로 확대, 드래그로 이동. 축소 상태에서 구를 클릭하면 구 요약(시세·판정 분포·동별 표·호재)이 아래에 뜨고, 확대 상태에서 동을 클릭하면 그 동으로 좁혀지며 동 요약이 뜹니다. 마우스를 점에 올리면 단지 특징이 뜹니다. 아파트를 클릭하면 오른쪽에 <b>네이버 부동산 창</b>이 열리고(같은 창에서 갱신) '네이버 옆창' 버튼으로 끌 수 있습니다. 네이버는 페이지 안 삽입(iframe)을 막아 별도 창으로 띄웁니다. 좌표는 직방 단지정보 기준(동 중심 표기 단지는 점선 테두리 '위치 근사'). 기준가 = 해당 면적의 최근 3개월 실거래 중위값 → 없으면 12개월 중위값 → 마지막 거래 → 네이버 호가 순.</p>
       <div class="card detail" id="detail"><p class="small">지도의 점이나 왼쪽 목록을 클릭하면 실거래 내역, 시세 추이, 전세, 판정 근거, 학교·호재가 나옵니다.</p></div>
     </main>
   </div>
@@ -457,7 +459,7 @@ const fmtEok=(man)=>man==null?'-':(man/10000).toFixed(man>=100000?1:2)+'억';
 const fmtYM=(ym)=>ym?ym.slice(0,4)+'.'+ym.slice(4):'';
 
 /* ---------------- STATE ---------------- */
-const S = {showSch:true,region:null,hj:new Set(),budget:7.0,budgetManual:false,size:84,rooms:'4',commute:60,mode:'best',edu:3,eduOver:true,builtMin:1990,unitsMin:300,tradeOnly:true,noReg:false,include:[],exclude:[],filter:'all',selected:null,selSize:{},listLimit:60};
+const S = {naverAuto:(function(){try{return localStorage.getItem('gh_naver')!=='0';}catch(e){return true;}})(),showSch:true,region:null,hj:new Set(),budget:7.0,budgetManual:false,size:84,rooms:'4',commute:60,mode:'best',edu:3,eduOver:true,builtMin:1990,unitsMin:300,tradeOnly:true,noReg:false,include:[],exclude:[],filter:'all',selected:null,selSize:{},listLimit:60};
 const K = {seoulPrice:7.4,seoulJeonse:4.5,seoulAcq:5.0,seoulYears:8,seoulTaxMode:'exempt',ptPrice:3.9,ptLoan:1.7,moving:0.2,reserve:0.3,extra:0,monthly:100,rate:4.4,term:30,income:7000,otherDebt:0,region:'reg'};
 
 /* ---------------- FINANCE ---------------- */
@@ -774,7 +776,13 @@ function renderList(){
   document.getElementById('moreBtn').hidden = vis.length<=S.listLimit;
   list.querySelectorAll('.item').forEach(el=>{el.addEventListener('click',()=>select(el.dataset.id));el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();select(el.dataset.id);}});});
 }
-function select(id){ S.selected=id; S.region=null; document.getElementById('regionCard').hidden=true; renderList(); drawMarkers(); renderDetail(); document.getElementById('detail').scrollIntoView({behavior:'smooth',block:'nearest'}); }
+function naverUrl(c){ return c.hs?`https://fin.land.naver.com/complexes/${c.hs}`:`https://m.land.naver.com/search/result/${encodeURIComponent(c.name)}`; }
+let naverWin=null;
+function openNaver(c){ const url=naverUrl(c); const w=Math.min(600,Math.max(420,Math.round(screen.availWidth*0.36))); const h=Math.max(600,screen.availHeight-80); const left=Math.max(0,(screen.availLeft||0)+screen.availWidth-w-8); const top=(screen.availTop||0)+40;
+  try{ naverWin=window.open(url,'gh_naver',`popup=yes,width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes`); }catch(e){ naverWin=null; }
+  const hint=document.getElementById('naverHint'); if(hint){ hint.hidden=!!naverWin; if(!naverWin) hint.innerHTML=`팝업이 차단되어 옆창을 못 열었습니다. 주소창의 팝업 허용을 켜거나 <a target="_blank" rel="noopener" href="${url}">여기</a>를 눌러 열어 주세요.`; }
+  if(naverWin){ try{ naverWin.focus(); }catch(e){} } }
+function select(id){ S.selected=id; S.region=null; document.getElementById('regionCard').hidden=true; const c0=C.find(x=>x.id===id); if(c0&&S.naverAuto) openNaver(c0); renderList(); drawMarkers(); renderDetail(); document.getElementById('detail').scrollIntoView({behavior:'smooth',block:'nearest'}); }
 function chartSVG(series){
   if(!series||series.length<2) return '<p class="small">월별 추이를 그릴 거래가 부족합니다.</p>';
   const W=520,H=140,L=48,R=10,T=10,Bm=24; const ys=series.map(s=>s[1]); const mn=Math.min(...ys)*0.97, mx=Math.max(...ys)*1.03;
@@ -798,7 +806,7 @@ function renderDetail(){
   const rentsTbl=sz&&sz.rents.length?`<div class="trades" style="max-height:140px"><table class="num"><tr><th>계약</th><th class="r">층</th><th class="r">전세보증금</th></tr>${sz.rents.map(t=>`<tr><td>${fmtYM(t[0])}.${String(t[1]).padStart(2,'0')}</td><td class="r">${t[2]}</td><td class="r">${fmtEok(t[3])}</td></tr>`).join('')}</table></div>`:'<p class="small">최근 12개월 전세 거래 없음.</p>';
   const q=encodeURIComponent(c.name);
   const askHtml=c.ask?`<dt>네이버 매물 호가</dt><dd>매매 ${c.ask.dealCnt}건 ${c.ask.dealMin?fmtEok(c.ask.dealMin)+' ~ '+fmtEok(c.ask.dealMax):''} · 전세 ${c.ask.leaseCnt}건 ${c.ask.leaseMin?fmtEok(c.ask.leaseMin)+' ~ '+fmtEok(c.ask.leaseMax):''} <span class="small">(전 평형 합산, 2026-09-25)</span></dd>`:'<dt>네이버 매물 호가</dt><dd class="small">수집 시점에 네이버 차단으로 호가 미수집. 링크에서 확인.</dd>';
-  d.innerHTML=`<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline"><h2>${c.name} <span class="badge ${e.status}">${lab}</span></h2><span class="small">${c.sggnm||c.sgg} ${c.hj||c.dong}${c.hj&&c.hj!==c.dong?' (법정동 '+c.dong+')':''}${c.road&&c.road!=='-'?' · '+c.road:''} · ${c.built||'?'}년 · ${c.units?c.units.toLocaleString()+'세대':'세대수 미확인'}${c.st?` · 가까운 역 ${c.st[0]} ${Math.round(c.st[1]*1000)}m`:''}${c.approx?' · <b>위치 근사</b>':''}</span></div>
+  d.innerHTML=`<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline"><h2>${c.name} <span class="badge ${e.status}">${lab}</span> <button class="btn primary" id="btnNaver" style="padding:4px 10px;font-size:12px;vertical-align:middle">네이버 부동산 옆창 ↗</button></h2><span class="small">${c.sggnm||c.sgg} ${c.hj||c.dong}${c.hj&&c.hj!==c.dong?' (법정동 '+c.dong+')':''}${c.road&&c.road!=='-'?' · '+c.road:''} · ${c.built||'?'}년 · ${c.units?c.units.toLocaleString()+'세대':'세대수 미확인'}${c.st?` · 가까운 역 ${c.st[0]} ${Math.round(c.st[1]*1000)}m`:''}${c.approx?' · <b>위치 근사</b>':''}</span></div>
   <div class="tr small" style="margin:2px 0 6px">${traits(c,e).map(x=>`<span style="display:inline-block;margin-right:8px">· ${x}</span>`).join('')}</div>
   <div class="sizes">${sizes||'<span class="small">실거래 면적 정보 없음</span>'}</div>
   <div class="two">
@@ -839,6 +847,7 @@ function renderDetail(){
    </div>
   </div>`;
   d.querySelectorAll('.sizes button').forEach(b=>b.addEventListener('click',()=>{S.selSize[c.id]=Number(b.dataset.sz); refresh();}));
+  const bn=d.querySelector('#btnNaver'); if(bn) bn.addEventListener('click',()=>openNaver(c));
 }
 
 /* ---------------- NL PARSER ---------------- */
@@ -1039,6 +1048,7 @@ document.getElementById('tgAll').addEventListener('click',()=>setFilter('all'));
 document.getElementById('tgBlue').addEventListener('click',()=>setFilter('blue'));
 document.getElementById('tgBY').addEventListener('click',()=>setFilter('by'));
 function setFilter(f){S.filter=f;S.listLimit=60;['tgAll','tgBlue','tgBY'].forEach(id=>document.getElementById(id).setAttribute('aria-pressed',(f==='all'&&id==='tgAll')||(f==='blue'&&id==='tgBlue')||(f==='by'&&id==='tgBY')));drawMarkers();renderList();}
+(function(){ const b=document.getElementById('tgNaver'); b.setAttribute('aria-pressed',S.naverAuto); b.addEventListener('click',()=>{ S.naverAuto=!S.naverAuto; b.setAttribute('aria-pressed',S.naverAuto); try{localStorage.setItem('gh_naver',S.naverAuto?'1':'0');}catch(e){} if(S.naverAuto&&S.selected){ const c=C.find(x=>x.id===S.selected); if(c) openNaver(c); } }); })();
 document.getElementById('tgSch').addEventListener('click',e=>{S.showSch=!S.showSch;e.currentTarget.setAttribute('aria-pressed',S.showSch);drawDynamic();});
 document.getElementById('zGg').addEventListener('click',()=>zoomTo(37.292,127.052,220));
 document.getElementById('zYt').addEventListener('click',()=>zoomTo(37.252,127.065,220));
@@ -1057,6 +1067,6 @@ drawMap(); renderFacts(); refresh(); bindSS(); document.getElementById('gotoMap'
 try{const t=localStorage.getItem('gh_tab'); if(t&&document.querySelector(`.tabs button[data-tab="${t}"]`)) document.querySelector(`.tabs button[data-tab="${t}"]`).click();}catch(e){}
 
 document.getElementById('loadMsg').remove();
-window.APP={get C(){return C;},get EV(){return EV;},S,K,select,selectGu,zoomTo,showRegion,refresh,DATA};
+window.APP={get C(){return C;},get EV(){return EV;},S,K,select,selectGu,zoomTo,showRegion,refresh,DATA,naverUrl,openNaver};
 });
 </script>

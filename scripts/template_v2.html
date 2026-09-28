@@ -622,12 +622,13 @@ function drawDynamic(){
   { const k=Math.max(0.45,Math.min(1.2,scale)); MAPDATA.stations.forEach(st=>{ const X=px(st.x), Y=py(st.y); if(!inView(X,Y)) return; const r=(4.6*k).toFixed(2); s+=`<g class="stn"><circle cx="${X}" cy="${Y}" r="${r}" fill="var(--card)" stroke="var(--ink)" stroke-width="${(2*k).toFixed(2)}"/>${scale<0.9?`<text x="${X+ +r+3}" y="${Y+4*k}" font-size="${(10*k*1.35).toFixed(1)}" font-weight="700">${st.n}</text>`:''}</g>`; }); }
   // 중학교 (등급 색)
   if(S.showSch && scale<0.75){ const GC={5:'#1E88E5',4:'#43A047',3:'#FDD835',2:'#FB8C00',1:'#E53935'}; const k=Math.max(0.5,Math.min(1.1,scale));
-    (DATA.schools||[]).forEach(m=>{ const X=px(m.lng),Y=py(m.lat); if(!inView(X,Y)) return; const r=(6*k).toFixed(1); s+=`<g class="sch"><path d="M${X} ${Y-r} L${X+ +r} ${Y} L${X} ${Y+ +r} L${X-r} ${Y} Z" fill="${GC[m.grade]}" stroke="var(--card)" stroke-width="1.2"><title>${m.name} · 등급 ${m.grade}/5 · A ${m.A}%</title></path>${scale<0.4?`<text class="dlbl" x="${X+ +r+2}" y="${Y+3*k}" font-size="${(9.5*k*1.3).toFixed(1)}" style="opacity:.9">${m.name.replace('학교','')} ${m.grade}</text>`:''}</g>`; }); }
+    (DATA.schools||[]).forEach(m=>{ const X=px(m.lng),Y=py(m.lat); if(!inView(X,Y)) return; const r=(6*k).toFixed(1); s+=`<g class="sch" data-sid="${m.id}" style="cursor:pointer"><path d="M${X} ${Y-r} L${X+ +r} ${Y} L${X} ${Y+ +r} L${X-r} ${Y} Z" fill="${GC[m.grade]}" stroke="var(--card)" stroke-width="1.2"/>${scale<0.4?`<text class="dlbl" x="${X+ +r+2}" y="${Y+3*k}" font-size="${(9.5*k*1.3).toFixed(1)}" style="opacity:.9">${m.name.replace('학교','')} ${m.grade}</text>`:''}</g>`; }); }
   // 직장
   const WX=px(WORK.lng), WY=py(WORK.lat); const ws=Math.max(0.35,Math.min(1,scale));
   s+=`<g><rect x="${WX-9*ws}" y="${WY-9*ws}" width="${18*ws}" height="${18*ws}" rx="3" fill="var(--ink)"/><text x="${WX}" y="${WY+4*ws}" text-anchor="middle" font-size="${(10*ws).toFixed(1)}" style="fill:var(--card);font-weight:700">직</text><text class="dlbl" x="${WX-12*ws}" y="${WY-13*ws}" text-anchor="end" font-size="${(11*ws).toFixed(1)}">직장 · 광교역 앞</text></g>`;
   g.innerHTML=s;
   g.querySelectorAll('.gubtn').forEach(el=>el.addEventListener('click',ev=>{ev.stopPropagation(); selectGu(el.dataset.gu);}));
+  g.querySelectorAll('.sch').forEach(el=>{ el.addEventListener('pointerenter',ev=>showSchTip(el.dataset.sid,ev)); el.addEventListener('pointermove',ev=>moveTip(ev)); el.addEventListener('pointerleave',hideTip); el.addEventListener('click',ev=>{ev.stopPropagation(); showSchTip(el.dataset.sid,ev);}); });
   document.querySelectorAll('.dong').forEach(el=>{ el.classList.toggle('on',S.hj.has(el.dataset.cd)); el.classList.toggle('off',S.hj.size>0&&!S.hj.has(el.dataset.cd)); });
   drawMarkers();
 }
@@ -665,6 +666,10 @@ function traits(c,e){
 }
 function showTip(id,ev){ const c=C.find(x=>x.id===id); if(!c) return; const e=EV[c.id]; const tip=document.getElementById('tip'); const lab={blue:'적합',yellow:'개선하면 가능',red:'부적합'}[e.status];
   tip.innerHTML=`<b>${c.name}</b> <span class="badge ${e.status}">${lab}</span><div class="small">${c.sggnm||c.sgg} ${c.hj||c.dong}${c.hj&&c.hj!==c.dong?` (법정동 ${c.dong})`:''}</div><div style="margin-top:4px"><b class="num">${e.rp?fmtEok(e.rp.p):'가격 정보 없음'}</b> <span class="small">${e.rp?e.rp.src:''}</span></div><div class="tr">${traits(c,e).map(x=>`<span>· ${x}</span>`).join('')}</div>`;
+  tip.hidden=false; moveTip(ev); }
+function showSchTip(sid,ev){ const m=SCHOOL[sid]; if(!m) return; const tip=document.getElementById('tip'); const first=C.filter(c=>c.ms.length&&c.ms[0].id===sid); const cand=C.filter(c=>c.ms.some(x=>x.id===sid)).length; const GT=GRADE_TXT[m.grade]||'';
+  const subj=m.subj?Object.entries(m.subj).map(([k,v])=>`${k} A ${v.A}%`).join(' · '):'';
+  tip.innerHTML=`<b>${m.name}</b> <span class="badge ${m.grade>=4?'blue':m.grade===3?'yellow':'red'}">학교등급 ${m.grade}/5 · ${GT}</span><div class="small">${m.addr||''}${m.gender?` · ${m.gender}학교`:''}</div><div class="tr"><span>· 국영수 A등급 평균 <b>${m.A}%</b> · E등급 ${m.E}% · 평균 ${m.avg}점 · 응시 ${m.n||'-'}명</span>${subj?`<span>· ${subj}</span>`:''}<span>· 특목·자사고 진학 ${m.special!=null?m.special+'%':'-'} (2025 졸업생)${m.A3!=null?` · 2024 3학년 A ${m.A3}%`:''}</span><span>· 경기 남부 백분위 ${m.pct}% · 이 학교가 1순위인 단지 ${first.length}개, 후보 ${cand}개</span>${first.length?`<span class="small">· 예: ${first.slice(0,4).map(c=>c.name).join(', ')}${first.length>4?' 외':''}</span>`:''}</div>`;
   tip.hidden=false; moveTip(ev); }
 function moveTip(ev){ const tip=document.getElementById('tip'); if(tip.hidden) return; const box=document.getElementById('mapbox').getBoundingClientRect(); let x=ev.clientX-box.left+14, y=ev.clientY-box.top+14; if(x+300>box.width) x=ev.clientX-box.left-300; if(y+tip.offsetHeight+10>box.height) y=ev.clientY-box.top-tip.offsetHeight-10; tip.style.left=x+'px'; tip.style.top=Math.max(4,y)+'px'; }
 function hideTip(){ document.getElementById('tip').hidden=true; }
